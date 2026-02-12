@@ -361,7 +361,8 @@ p {
   padding: 1rem 0;
 }
 
-.results-carousel .item {
+.results-carousel .item,
+.hero.teaser .item {
   margin: 0rem;
   overflow: hidden;
   padding: 0.25rem;
@@ -378,7 +379,8 @@ p {
   border: 1px solid rgba(15, 23, 42, 0.9);
 }
 
-.results-carousel .item:hover {
+.results-carousel .item:hover,
+.hero.teaser .item:hover {
   transform: translateY(-4px) scale(1.02);
   box-shadow:
     0 24px 70px rgba(15, 23, 42, 0.98),
@@ -387,7 +389,8 @@ p {
 }
 
 .results-carousel .item img,
-.results-carousel video {
+.results-carousel video,
+.hero.teaser .item video {
   margin: 0;
   border-radius: var(--border-radius);
   width: 100%;
