@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Primary Meta Tags -->
+  <!-- TODO: Replace with your paper title and author names -->
+  <meta name="title" content="InterPrior: Scaling Generative Control for Physics-Based Human-Object Interactions">
+  <!-- TODO: Write a compelling 150-160 character description of your research -->
+  <meta name="description" content="Humans rarely plan whole-body interactions with objects at the level of explicit whole-body movements. High-level intentions, such as affordance, define the goal, while coordinated balance, contact, and manipulation can emerge naturally from underlying physical and motor priors. Scaling such priors is key to enabling humanoids to compose and generalize loco-manipulation skills across diverse contexts while maintaining physically coherent whole-body coordination. To this end, we introduce InterPrior, a scalable framework that learns a unified generative controller through large-scale imitation pretraining and post-training by reinforcement learning. InterPrior first distills a full-reference imitation expert into a versatile, goal-conditioned variational policy that reconstructs motion from multimodal observations and high-level intent. While the distilled policy reconstructs training behaviors, it does not generalize reliably due to the vast configuration space of large-scale human-object interactions. To address this, we apply data augmentation with physical perturbations, and then perform reinforcement learning finetuning to improve competence on unseen goals and initializations. Together, these steps consolidate the reconstructed latent skills into a valid manifold, yielding a motion prior that generalizes beyond the training data, e.g., it can incorporate new behaviors such as interactions with unseen objects. We further demonstrate its effectiveness for user-interactive control and its potential for real robot deployment.">
+  <!-- TODO: Add 5-10 relevant keywords for your research area -->
+  <meta name="keywords" content="Human-Object Interactions, Physics-Based Animation, Motion Priors">
+  <!-- TODO: List all authors -->
+  <meta name="author" content="Sirui Xu, Samuel Schulter, Morteza Ziyadi, Xialin He, Xiaohan Fei, Yu-Xiong Wang, Liang-Yan Gui">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="English">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="article">
+  <!-- TODO: Replace with your institution or lab name -->
+  <meta property="og:site_name" content="University of Illinois Urbana-Champaign, Amazon">
+  <!-- TODO: Same as paper title above -->
+  <meta property="og:title" content="InterPrior: Scaling Generative Control for Physics-Based Human-Object Interactions">
+  <!-- TODO: Same as description above -->
+  <meta property="og:description" content="Humans rarely plan whole-body interactions with objects at the level of explicit whole-body movements. High-level intentions, such as affordance, define the goal, while coordinated balance, contact, and manipulation can emerge naturally from underlying physical and motor priors. Scaling such priors is key to enabling humanoids to compose and generalize loco-manipulation skills across diverse contexts while maintaining physically coherent whole-body coordination. To this end, we introduce InterPrior, a scalable framework that learns a unified generative controller through large-scale imitation pretraining and post-training by reinforcement learning. InterPrior first distills a full-reference imitation expert into a versatile, goal-conditioned variational policy that reconstructs motion from multimodal observations and high-level intent. While the distilled policy reconstructs training behaviors, it does not generalize reliably due to the vast configuration space of large-scale human-object interactions. To address this, we apply data augmentation with physical perturbations, and then perform reinforcement learning finetuning to improve competence on unseen goals and initializations. Together, these steps consolidate the reconstructed latent skills into a valid manifold, yielding a motion prior that generalizes beyond the training data, e.g., it can incorporate new behaviors such as interactions with unseen objects. We further demonstrate its effectiveness for user-interactive control and its potential for real robot deployment.">
+  <!-- TODO: Replace with your actual website URL -->
+  <meta property="og:url" content="https://sirui-xu.github.io/InterPrior/">
+  <!-- TODO: Create a 1200x630px preview image and update path -->
+  <meta property="og:image" content="static/images/social_preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="InterPrior: Scaling Generative Control for Physics-Based Human-Object Interactions">
+  <meta property="article:published_time" content="2026-02-05T00:00:00.000Z">
+  <meta property="article:author" content="Sirui Xu">
+  <meta property="article:section" content="Research">
+  <meta property="article:tag" content="Human-Object Interactions">
+  <meta property="article:tag" content="Physics-Based Animation">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- TODO: Replace with your lab/institution Twitter handle -->
+  <meta name="twitter:site" content="@xu_sirui">
+  <!-- TODO: Replace with first author's Twitter handle -->
+  <meta name="twitter:creator" content="@xu_sirui">
+  <!-- TODO: Same as paper title above -->
+  <meta name="twitter:title" content="InterPrior: Scaling Generative Control for Physics-Based Human-Object Interactions">
+  <!-- TODO: Same as description above -->
+  <meta name="twitter:description" content="Humans rarely plan whole-body interactions with objects at the level of explicit whole-body movements. High-level intentions, such as affordance, define the goal, while coordinated balance, contact, and manipulation can emerge naturally from underlying physical and motor priors. Scaling such priors is key to enabling humanoids to compose and generalize loco-manipulation skills across diverse contexts while maintaining physically coherent whole-body coordination. To this end, we introduce InterPrior, a scalable framework that learns a unified generative controller through large-scale imitation pretraining and post-training by reinforcement learning. InterPrior first distills a full-reference imitation expert into a versatile, goal-conditioned variational policy that reconstructs motion from multimodal observations and high-level intent. While the distilled policy reconstructs training behaviors, it does not generalize reliably due to the vast configuration space of large-scale human-object interactions. To address this, we apply data augmentation with physical perturbations, and then perform reinforcement learning finetuning to improve competence on unseen goals and initializations. Together, these steps consolidate the reconstructed latent skills into a valid manifold, yielding a motion prior that generalizes beyond the training data, e.g., it can incorporate new behaviors such as interactions with unseen objects. We further demonstrate its effectiveness for user-interactive control and its potential for real robot deployment.">
+  <!-- TODO: Same as social preview image above -->
+  <meta name="twitter:image" content="https://sirui-xu.github.io/InterPrior/static/images/social_preview.png">
+  <meta name="twitter:image:alt" content="InterPrior: Scaling Generative Control for Physics-Based Human-Object Interactions">
+
+  <!-- Academic/Research Specific -->
+  <meta name="citation_title" content="InterPrior: Scaling Generative Control for Physics-Based Human-Object Interactions">
+  <meta name="citation_author" content="Xu, Sirui">
+  <meta name="citation_author" content="Schulter, Samuel">
+  <meta name="citation_author" content="Ziyadi, Morteza">
+  <meta name="citation_author" content="He, Xialin">
+  <meta name="citation_author" content="Fei, Xiaohan">
+  <meta name="citation_author" content="Wang, Yu-Xiong">
+  <meta name="citation_author" content="Gui, Liang-Yan">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="citation_conference_title" content="ArXiv">
+  <meta name="citation_pdf_url" content="https://sirui-xu.github.io/InterPrior/static/pdfs/paper.pdf">
+  
+  <!-- Additional SEO -->
+  <meta name="theme-color" content="#2563eb">
+  <meta name="msapplication-TileColor" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://ajax.googleapis.com">
+  <link rel="preconnect" href="https://documentcloud.adobe.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+
+  <!-- TODO: Replace with your paper title and authors -->
+  <title>InterPrior</title>
+  
+  <!-- Favicon and App Icons -->
+  <link rel="icon" type="image/x-icon" href="static/images/icon.png">
+  <link rel="apple-touch-icon" href="static/images/icon.png">
+  
+  <!-- Critical CSS - Load synchronously -->
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+  
+  <!-- Non-critical CSS - Load asynchronously -->
+  <link rel="preload" href="static/css/bulma-carousel.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="static/css/bulma-slider.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="static/css/fontawesome.all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  
+  <!-- Fallback for browsers that don't support preload -->
+  <noscript>
+    <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+    <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+    <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  </noscript>
+  
+  <!-- Fonts - Optimized loading -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Defer non-critical JavaScript -->
+  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script defer src="static/js/bulma-carousel.min.js"></script>
+  <script defer src="static/js/bulma-slider.min.js"></script>
+  <script defer src="static/js/index.js"></script>
+  
+  <!-- Structured Data for Academic Papers -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "headline": "InterPrior: Scaling Generative Control for Physics-Based Human-Object Interactions",
+    "description": "Humans rarely plan whole-body interactions with objects at the level of explicit whole-body movements. High-level intentions, such as affordance, define the goal, while coordinated balance, contact, and manipulation can emerge naturally from underlying physical and motor priors. Scaling such priors is key to enabling humanoids to compose and generalize loco-manipulation skills across diverse contexts while maintaining physically coherent whole-body coordination. To this end, we introduce InterPrior, a scalable framework that learns a unified generative controller through large-scale imitation pretraining and post-training by reinforcement learning. InterPrior first distills a full-reference imitation expert into a versatile, goal-conditioned variational policy that reconstructs motion from multimodal observations and high-level intent. While the distilled policy reconstructs training behaviors, it does not generalize reliably due to the vast configuration space of large-scale human-object interactions. To address this, we apply data augmentation with physical perturbations, and then perform reinforcement learning finetuning to improve competence on unseen goals and initializations. Together, these steps consolidate the reconstructed latent skills into a valid manifold, yielding a motion prior that generalizes beyond the training data, e.g., it can incorporate new behaviors such as interactions with unseen objects. We further demonstrate its effectiveness for user-interactive control and its potential for real robot deployment.",
+    "author": [
+      {
+        "@type": "Person",
+        "name": "Sirui Xu",
+        "affiliation": {
+          "@type": "Organization",
+          "name": "University of Illinois Urbana-Champaign"
+        }
+      },
+      {
+        "@type": "Person",
+        "name": "Samuel Schulter",
+        "affiliation": {
+          "@type": "Organization",
+          "name": "Amazon"
+        }
+      },
+      {
+        "@type": "Person",
+        "name": "Morteza Ziyadi",
+        "affiliation": {
+          "@type": "Organization",
+          "name": "Amazon"
+        }
+      },
+      {
+        "@type": "Person",
+        "name": "Xialin He",
+        "affiliation": {
+          "@type": "Organization",
+          "name": "University of Illinois Urbana-Champaign"
+        }
+      },
+      {
+        "@type": "Person",
+        "name": "Xiaohan Fei",
+        "affiliation": {
+          "@type": "Organization",
+          "name": "Amazon"
+        }
+      },
+      {
+        "@type": "Person",
+        "name": "Yu-Xiong Wang",
+        "affiliation": {
+          "@type": "Organization",
+          "name": "University of Illinois Urbana-Champaign"
+        }
+      },
+      {
+        "@type": "Person",
+        "name": "Liang-Yan Gui",
+        "affiliation": {
+          "@type": "Organization",
+          "name": "University of Illinois Urbana-Champaign"
+        }
+      }
+    ],
+    "datePublished": "2026-02-05",
+    "publisher": {
+      "@type": "Organization",
+      "name": "ArXiv"
+    },
+    "url": "https://sirui-xu.github.io/InterPrior/",
+    "image": "https://sirui-xu.github.io/InterPrior/static/images/social_preview.png",
+    "keywords": [
+      "Human-Object Interactions",
+      "Physics-Based Animation",
+      "Motion Priors"
+    ],
+    "abstract": "Humans rarely plan whole-body interactions with objects at the level of explicit whole-body movements. High-level intentions, such as affordance, define the goal, while coordinated balance, contact, and manipulation can emerge naturally from underlying physical and motor priors. Scaling such priors is key to enabling humanoids to compose and generalize loco-manipulation skills across diverse contexts while maintaining physically coherent whole-body coordination. To this end, we introduce InterPrior, a scalable framework that learns a unified generative controller through large-scale imitation pretraining and post-training by reinforcement learning. InterPrior first distills a full-reference imitation expert into a versatile, goal-conditioned variational policy that reconstructs motion from multimodal observations and high-level intent. While the distilled policy reconstructs training behaviors, it does not generalize reliably due to the vast configuration space of large-scale human-object interactions. To address this, we apply data augmentation with physical perturbations, and then perform reinforcement learning finetuning to improve competence on unseen goals and initializations. Together, these steps consolidate the reconstructed latent skills into a valid manifold, yielding a motion prior that generalizes beyond the training data, e.g., it can incorporate new behaviors such as interactions with unseen objects. We further demonstrate its effectiveness for user-interactive control and its potential for real robot deployment.",
+    "citation": "@article{xu2026interprior,
+      title={InterPrior: Scaling Generative Control for Physics-Based Human-Object Interactions},
+      author={Xu, Sirui and Schulter, Samuel and Ziyadi, Morteza and He, Xialin and Fei, Xiaohan and Wang, Yu-Xiong and Gui, Liang-Yan},
+      journal={arXiv preprint arxiv:2602.06035},
+      year={2026}
+    }",
+    "isAccessibleForFree": true,
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "mainEntity": {
+      "@type": "WebPage",
+      "@id": "https://sirui-xu.github.io/InterPrior/"
+    },
+    "about": [
+      {
+        "@type": "Thing",
+        "name": "Character Animation"
+      },
+      {
+        "@type": "Thing", 
+        "name": "Humanoid"
+      }
+    ]
+  }
+  </script>
+  
+  <!-- Website/Organization Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Sirui Xu",
+    "url": "https://sirui-xu.github.io",
+    "logo": "https://sirui-xu.github.io/InterPrior/static/images/icon.png",
+    "sameAs": [
+      "https://x.com/xu_sirui",
+      "https://github.com/Sirui-Xu"
+    ]
+  }
+  </script>
+</head>
+<body>
+<!-- particles.js container -->
+<div id="particles-js"></div>
+
+<!-- scripts -->
+<script src="particles.js"></script>
+<script src="static/js/app.js"></script>
+
+  <!-- Scroll to Top Button -->
+  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <!-- More Works Dropdown -->
+  <div class="more-works-container">
+    <button class="more-works-btn" onclick="toggleMoreWorks()" title="View More Works on Human-Object Interactions">
+      <i class="fas fa-flask"></i>
+      More on HOI
+      <i class="fas fa-chevron-down dropdown-arrow"></i>
+    </button>
+    <div class="more-works-dropdown" id="moreWorksDropdown">
+      <div class="dropdown-header">
+        <h4>Inter-Series Research Line</h4>
+        <button class="close-btn" onclick="toggleMoreWorks()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="works-list">
+        <!-- TODO: Replace with your lab's related works -->
+        <a href="https://sirui-xu.github.io/dexplore/" class="work-item" target="_blank">
+          <div class="work-info">
+            <!-- TODO: Replace with actual paper title -->
+            <h5>Dexplore: Scalable Neural Control for Dexterous Manipulation from Reference-Scoped Exploration</h5>
+            <!-- TODO: Replace with brief description -->
+            <p>Deploy a variant of InterPrior on a dexterous robotic hand.</p>
+            <!-- TODO: Replace with venue and year -->
+            <span class="work-venue">CoRL 2025</span>
+          </div>
+          <i class="fas fa-external-link-alt"></i>
+        </a>
+        <a href="https://sirui-xu.github.io/InterMimic/" class="work-item" target="_blank">
+          <div class="work-info">
+            <!-- TODO: Replace with actual paper title -->
+            <h5>InterMimic: Towards Universal Whole-Body Control for Physics-Based Human-Object Interactions</h5>
+            <!-- TODO: Replace with brief description -->
+            <p>The foundation of InterPrior, which scales up loco-manipulation behaviors with motion imitation.</p>
+            <!-- TODO: Replace with venue and year -->
+            <span class="work-venue">CVPR 2025 Highlight</span>
+          </div>
+          <i class="fas fa-external-link-alt"></i>
+        </a>
+        <!-- TODO: Add more related works or remove extra items -->
+        <a href="https://sirui-xu.github.io/InterAct/" class="work-item" target="_blank">
+          <div class="work-info">
+            <h5>InterAct: Advancing Large-Scale Versatile 3D Human-Object Interaction Generation</h5>
+            <p>A comprehensive dataset for benchmarking kinematic and physics-based human-object interactions.</p>
+            <span class="work-venue">CVPR 2025</span>
+          </div>
+          <i class="fas fa-external-link-alt"></i>
+        </a>
+        <a href="https://sirui-xu.github.io/InterDreamer/" class="work-item" target="_blank">
+          <div class="work-info">
+            <h5>InterDreamer: Zero-Shot Text to 3D Dynamic Human-Object Interaction</h5>
+            <p>Synergizing LLM with human motion prior for text-driven 3D human-object interactions without paired training.</p>
+            <span class="work-venue">NeurIPS 2024</span>
+          </div>
+          <i class="fas fa-external-link-alt"></i>
+        </a>
+        <a href="https://sirui-xu.github.io/InterDiff/" class="work-item" target="_blank">
+          <div class="work-info">
+            <h5>InterDiff: Generating 3D Human-Object Interactions with Physics-Informed Diffusion</h5>
+            <p>The first diffusion model for whole-body loco-manipulation animation.</p>
+            <span class="work-venue">ICCV 2023</span>
+          </div>
+          <i class="fas fa-external-link-alt"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <main id="main-content">
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <!-- TODO: Replace with your paper title -->
+            <br><br>
+            <h1 class="title is-2 publication-title">InterPrior: Scaling Generative Control for Physics-Based Human-Object Interactions</h1>
+            <div class="is-size-5 publication-authors">
+              <!-- TODO: Replace with your paper authors and their personal links -->
+              <span class="author-block">
+                <a href="https://sirui-xu.github.io/" target="_blank">Sirui Xu</a><sup>1</sup>,</span>
+                <span class="author-block">
+                  <a href="https://samschulter.github.io/" target="_blank">Samuel Schulter</a><sup>2</sup>,</span>
+                  <span class="author-block">
+                    <a href="https://scholar.google.com/citations?user=wkYZMakAAAAJ&hl=en" target="_blank">Morteza Ziyadi</a><sup>2</sup>,
+                  </span>
+                  <span class="author-block">
+                    <a href="https://xialin-he.github.io/" target="_blank">Xialin He</a><sup>1</sup>,
+                  </span><br>
+                  <span class="author-block">
+                    <a href="http://feixh.github.io/" target="_blank">Xiaohan Fei</a><sup>2</sup>,
+                  </span>
+                  <span class="author-block">
+                    <a href="https://yxw.cs.illinois.edu/" target="_blank">Yu-Xiong Wang</a><sup>1†</sup>,
+                  </span>
+                  <span class="author-block">
+                    <a href="https://lgui.cs.illinois.edu/" target="_blank">Liang-Yan Gui</a><sup>1†</sup>
+                  </div>
+
+                  <div class="is-size-5 publication-authors">
+                    <!-- TODO: Replace with your institution and conference/journal info -->
+                    <span class="author-block"><sup>1</sup> University of Illinois Urbana-Champaign</span>  <span class="author-block"><sup>2</sup>Amazon</span>
+                    <!-- <span class="author-block">ArXiv 2025</span> -->
+                    <!-- TODO: Remove this line if no equal contribution -->
+                    <!-- <span class="eql-cntrb"><small><br><sup>*</sup>Indicates Equal Contribution</small></span> -->
+                  </div>
+
+                  <div class="column has-text-centered">
+                    <div class="publication-links">
+                         <!-- TODO: Update with your arXiv paper ID -->
+                      <span class="link-block">
+                        <a href="https://arxiv.org/pdf/2602.06035" target="_blank"
+                        class="external-link button is-normal is-rounded">
+                        <span class="icon">
+                          <i class="fas fa-file-pdf"></i>
+                        </span>
+                        <span>Paper</span>
+                      </a>
+                    </span>
+
+                  <!-- TODO: Replace with your GitHub repository URL -->
+                  <!-- <span class="link-block">
+                    <a href="https://github.com/YOUR REPO HERE" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span> -->
+
+                <!-- TODO: Update with your arXiv paper ID -->
+                <span class="link-block">
+                  <a href="https://arxiv.org/abs/2602.06035" target="_blank"
+                  class="external-link button is-normal is-rounded">
+                  <span class="icon">
+                    <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Teaser video-->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <!-- TODO: Replace with your teaser video -->
+      <video poster="" id="tree" autoplay playsinline controls muted loop height="100%">
+        <!-- TODO: Add your video file path here -->
+        <source src="static/videos/teaser_720p.mp4" type="video/mp4">
+      </video>
+      <!-- TODO: Replace with your video description -->
+      <br>
+      <h2 class="subtitle has-text-centered">
+        InterPrior cultivates <span style="color:#ff3838;">motor intuition</span> with a versatile skillset, executing <span style="color:#ff3838;">sparse goals</span> for object interaction while coordinated loco-manipulation behavior emerges naturally.
+      </h2>
+    </div>
+  </div>
+</section>
+<!-- End teaser video -->
+
+<!-- Paper abstract -->
+<section class="section hero">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <!-- TODO: Replace with your paper abstract -->
+          <p>
+            Humans rarely plan whole-body interactions with objects at the level of explicit whole-body movements. High-level intentions, such as affordance, define the goal, while coordinated balance, contact, and manipulation can emerge naturally from underlying physical and motor priors. Scaling such priors is key to enabling humanoids to compose and generalize loco-manipulation skills across diverse contexts while maintaining physically coherent whole-body coordination. To this end, we introduce InterPrior, a scalable framework that learns a unified generative controller through large-scale imitation pretraining and post-training by reinforcement learning. InterPrior first distills a full-reference imitation expert into a versatile, goal-conditioned variational policy that reconstructs motion from multimodal observations and high-level intent. While the distilled policy reconstructs training behaviors, it does not generalize reliably due to the vast configuration space of large-scale human-object interactions. To address this, we apply data augmentation with physical perturbations, and then perform reinforcement learning finetuning to improve competence on unseen goals and initializations. Together, these steps consolidate the reconstructed latent skills into a valid manifold, yielding a motion prior that generalizes beyond the training data, e.g., it can incorporate new behaviors such as interactions with unseen objects. We further demonstrate its effectiveness for user-interactive control and its potential for real robot deployment.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!-- <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          
+          <div class="pdf-container" style="position: relative; padding-bottom: 57%; height: 0; overflow: hidden; border-radius: 16px; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(30, 64, 175, 0.6); transition: transform 240ms cubic-bezier(0.4,0,0.2,1), box-shadow 300ms ease; cursor: pointer;">
+            <iframe  src="static/pdfs/comic.pdf" width="100%" height="100%" style="position: absolute; top: 0; left: 0; border-radius: 16px; border: none;">
+          </iframe>
+          </div>
+
+        </div>
+      </div>
+  </div> -->
+</section>
+<!-- End paper abstract -->
+
+<section class="hero teaser">
+  <div class="hero-body">
+    <br>
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-3">Core Capabilities</h2>
+    </div>
+    <!-- <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4"><i>)</i></h2>
+    </div>     -->
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4">Catch Future Human-Object <span style="color:#ff3838";>Snapshots</span></h2>
+    </div>
+    <div class="container">
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item 100">
+          <video preload="none" poster="" id="snapshot-r1"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/r1.mp4"
+                    type="video/mp4">
+        </video>
+        </div>
+        <div class="item 4602">
+          <video preload="none" poster="" id="snapshot-r2"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/r2.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="snapshot-r3"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/r3.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="snapshot-r4"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/r4.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div>
+
+    </div>
+
+    <br>
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4">Follow Human-Object <span style="color:#ff3838";>Trajectories</span></h2>
+    </div>
+    <!-- <div class="columns is-centered has-text-centered">
+      <h2 class="title is-5"><span style="color:#6F864D";>Retargeting by RL + Forward Dynamics</span>: A better solution for Contact-Rich HOIs</h2>
+    </div> -->
+    <div class="container">
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item 100">
+          <video preload="none" poster="" id="trajectory-t0"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/t0.mp4"
+                    type="video/mp4">
+        </video>
+        </div>
+        <div class="item 100">
+          <video preload="none" poster="" id="trajectory-t1"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/t1.mp4"
+                    type="video/mp4">
+        </video>
+        </div>
+        <div class="item 4602">
+          <video preload="none" poster="" id="trajectory-t2"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/t2.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="trajectory-t3"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/t3.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="trajectory-t4"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/t4.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div>
+
+    </div>
+    <br>
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4">Capture Human-Object <span style="color:#ff3838";>Contact</span></h2>
+    </div>
+    <!-- <div class="columns is-centered has-text-centered">
+      <h2 class="title is-5"><span style="color:#6F864D";>Retargeting by RL + Forward Dynamics</span>: A better solution for Contact-Rich HOIs</h2>
+    </div> -->
+    <div class="container">
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item 100">
+          <video preload="none" poster="" id="contact-c0"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/c0.mp4"
+                    type="video/mp4">
+        </video>
+        </div>
+        <div class="item 4602">
+          <video preload="none" poster="" id="contact-c1"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/c1.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="contact-c2"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/c2.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="contact-c3"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/c3.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+                <div class="item 4602">
+          <video preload="none" poster="" id="contact-c4"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/c4.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="contact-c5"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/c5.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="contact-c6"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/c6.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div>
+
+    </div>
+    <p class="has-text-centered" style="font-size: 0.9em; color: #666; margin-top: 1em;">
+      The sparse goal is represented by the sphere. No dense reference is given.
+    </p>
+
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="hero-body">
+    <br>
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-3">More Applications</h2>
+    </div>
+    <!-- <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4"><i>)</i></h2>
+    </div>     -->
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4">Sim-to-Sim with <span style="color:#ff3838";>Unitree G1</span> (Object Goal Only) </h2>
+    </div>
+    <div class="container">
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item 100">
+          <video preload="none" poster="" id="sim-rr2"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr2.mp4"
+                    type="video/mp4">
+        </video>
+        </div>
+        <div class="item 4602">
+          <video preload="none" poster="" id="sim-rr3"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr3.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 4602">
+          <video preload="none" poster="" id="sim-rr11"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr11.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="sim-rr12"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr12.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 100">
+          <video preload="none" poster="" id="sim-rr6"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr6.mp4"
+                    type="video/mp4">
+        </video>
+        </div>
+        <div class="item 4602">
+          <video preload="none" poster="" id="sim-rr7"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr7.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="sim-rr8"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr8.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="sim-rr9"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr9.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="sim-rr14"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr14.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="sim-rr15"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr15.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="sim-rr17"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr17.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="sim-rr18"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr18.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="sim-rr19"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr19.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="sim-rr20"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr20.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="sim-rr21"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/rr21.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div>
+
+    </div>
+
+    <br>
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4"><span style="color:#ff3838";>User-Interactive</span> Control</h2>
+    </div>
+    <!-- <div class="columns is-centered has-text-centered">
+      <h2 class="title is-5"><span style="color:#6F864D";>Retargeting by RL + Forward Dynamics</span>: A better solution for Contact-Rich HOIs</h2>
+    </div> -->
+    <div class="container">
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item 100">
+          <video preload="none" poster="" id="interactive-i1"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/i1.mp4"
+                    type="video/mp4">
+        </video>
+        </div>
+        <div class="item 100">
+          <video preload="none" poster="" id="interactive-i2"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/i2.mp4"
+                    type="video/mp4">
+        </video>
+        </div>
+        <div class="item 4602">
+          <video preload="none" poster="" id="interactive-i3"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/i3.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="interactive-i4"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/i4.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="hero-body">
+    <br>
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-3">Emergent Behaviors</h2>
+    </div>
+    <!-- <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4"><i>)</i></h2>
+    </div>     -->
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4"><span style="color:#ff3838";>Multi</span>-Object Interactions</h2>
+    </div>
+    <div class="container">
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item 100">
+          <video preload="none" poster="" id="multi-m1"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/m1.mp4"
+                    type="video/mp4">
+        </video>
+        </div>
+        <div class="item 4602">
+          <video preload="none" poster="" id="multi-m2"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/m2.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="multi-m3"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/m3.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="multi-m4"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/m4.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div>
+
+    </div>
+
+    <br>
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4"><span style="color:#ff3838";>Diverse</span> Execution under Same Goals</h2>
+    </div>
+    <!-- <div class="columns is-centered has-text-centered">
+      <h2 class="title is-5"><span style="color:#6F864D";>Retargeting by RL + Forward Dynamics</span>: A better solution for Contact-Rich HOIs</h2>
+    </div> -->
+    <div class="container">
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item 100">
+          <video preload="none" poster="" id="diverse-d1"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/d1.mp4"
+                    type="video/mp4">
+        </video>
+        </div>
+        <div class="item 100">
+          <video preload="none" poster="" id="diverse-d2"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/d2.mp4"
+                    type="video/mp4">
+        </video>
+        </div>
+        <div class="item 4602">
+          <video preload="none" poster="" id="diverse-d3"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/d3.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item 277">
+          <video preload="none" poster="" id="diverse-d4"  playsinline controls muted loop height="100%">
+            <source src="./static/videos/ours.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Image carousel -->
+<!-- End image carousel -->
+
+
+<section class="hero teaser">
+  <div class="hero-body">
+    <br>
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-3">Strong Robustness</h2>
+    </div>
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4"><span style="color:#ff3838";>Long-Horizon</span> Tasks with <span style="color:#ff3838";>Random</span> Goal Switching</h2>
+    </div>
+    <br>
+    <div class="container">
+      <div class="columns is-centered">
+
+        <!-- sit. -->
+        <div class="column">
+          <div class="content">
+            <div class="publication-video">
+            <video preload="none" id="longhorizon-r1" playsinline controls muted loop height="100%">
+              <source src="./static/videos/r1.mp4"
+                      type="video/mp4">
+            </video></div>
+          </div>
+        </div>
+        <!--/ sit. -->
+
+        <!-- walk. -->
+        <div class="column">
+          <div class="content">
+            <div class="publication-video">
+            <video preload="none" id="longhorizon-long2" playsinline controls muted loop height="100%">
+              <source src="./static/videos/long2.mp4"
+                      type="video/mp4">
+            </video></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+    <br>
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4">Failure <span style="color:#ff3838";>Recovery</span></h2>
+    </div>
+    <br>
+    <div class="container">
+      <div class="columns is-centered">
+
+        <!-- sit. -->
+        <div class="column">
+          <div class="content">
+            <div class="publication-video">
+            <video preload="none" id="recovery-getup" playsinline controls muted loop height="100%">
+              <source src="./static/videos/getup.mp4"
+                      type="video/mp4">
+            </video></div>
+          </div>
+          <div class="has-text-centered">
+            <h2 class="title is-6">Getup from fall</h2>
+          </div>
+        </div>
+        <!--/ sit. -->
+
+        <!-- walk. -->
+        <div class="column">
+          <div class="content">
+            <div class="publication-video">
+            <video preload="none" id="recovery-fg" playsinline controls muted loop height="100%">
+              <source src="./static/videos/fg.mp4"
+                      type="video/mp4">
+            </video></div>
+          </div>
+          <div class="has-text-centered">
+            <h2 class="title is-6">First grasp fails</h2>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="content">
+            <div class="publication-video">
+            <video preload="none" id="recovery-sg" playsinline controls muted loop height="100%">
+              <source src="./static/videos/sg.mp4"
+                      type="video/mp4">
+            </video></div>
+          </div>
+          <div class="has-text-centered">
+            <h2 class="title is-6">Regrasp after failure</h2>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="content">
+            <div class="publication-video">
+            <video preload="none" id="recovery-full" playsinline controls muted loop height="100%">
+              <source src="./static/videos/full.mp4"
+                      type="video/mp4">
+            </video></div>
+          </div>
+          <div class="has-text-centered">
+            <h2 class="title is-6">Full rollout</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--/ comparison. -->
+  </div>
+
+  <div class="hero-body">
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-4">Comparison with Baselines</h2>
+    </div>
+    <br>
+    <div class="container">
+      <div class="columns is-centered">
+
+        <!-- sit. -->
+        <div class="column">
+          <div class="content">
+            <div class="publication-video">
+            <video preload="none" id="comparison-ours" playsinline controls muted loop height="100%">
+              <source src="./static/videos/ours.mp4"
+                      type="video/mp4">
+            </video>
+          </div>
+          </div>
+          <div class="has-text-centered">
+            <h2 class="title is-6">InterPrior (<span style="color:#ff3838";>Ours</span>)</h2>
+          </div>
+        </div>
+        <!--/ sit. -->
+
+        <!-- walk. -->
+        <div class="column">
+          <div class="content">
+            <div class="publication-video">
+            <video preload="none" id="comparison-baseline" playsinline controls muted loop height="100%">
+              <source src="./static/videos/baseline.mp4"
+                      type="video/mp4">
+            </video>
+          </div>
+          </div>
+          <div class="has-text-centered">
+            <h2 class="title is-6">InterMimic + MaskedMimic</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br><br>
+  </div>
+</section>
+
+<!-- Youtube video -->
+<section class="hero is-small">
+  <br><br>
+  <div class="hero-body">
+    <div class="container">
+      <!-- Paper video. -->
+      <div class="columns is-centered has-text-centered">
+        <h2 class="title is-3">Video Presentation</h2>
+      </div>
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          
+          <div class="pdf-container" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 16px; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(30, 64, 175, 0.6); transition: transform 240ms cubic-bezier(0.4,0,0.2,1), box-shadow 300ms ease; cursor: pointer;">
+            <iframe src="https://drive.google.com/file/d/1oASEkTu0YalU3F1OH1lU75zhJy41MP-T/preview"
+                    style="position: absolute; top:0; left: 0; width: 100%; height: 100%;"
+                    allow="autoplay"></iframe>
+          </div>
+          <br><br>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End youtube video -->
+
+
+<!-- Video carousel -->
+<!-- End video carousel -->
+
+
+
+
+
+
+<!--BibTex citation -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <div class="bibtex-header">
+        <h2 class="title">BibTeX</h2>
+        <button class="copy-bibtex-btn" onclick="copyBibTeX()" title="Copy BibTeX to clipboard">
+          <i class="fas fa-copy"></i>
+          <span class="copy-text">Copy</span>
+        </button>
+      </div>
+      <pre id="bibtex-code"><code>@article{xu2026interprior,
+      title={InterPrior: Scaling Generative Control for Physics-Based Human-Object Interactions},
+      author={Xu, Sirui and Schulter, Samuel and Ziyadi, Morteza and He, Xialin and Fei, Xiaohan and Wang, Yu-Xiong and Gui, Liang-Yan},
+      journal={arXiv preprint arxiv:2602.06035},
+      year={2026}
+}</code></pre>
+    </div>
+</section>
+<!--End BibTex citation -->
+
+
+  <footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+
+          <p>
+            This page was adopted from the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a>.
+          </p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Statcounter tracking code -->
+  
+<!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
+
+    <!-- End of Statcounter Code -->
+
+  </body>
+  </html>
