@@ -432,10 +432,11 @@ p {
   filter: brightness(0) invert(1);
 }
 
-.eql-cntrb { 
+.eql-cntrb {
   font-size: 0.875rem;
-  background: var(--primary-hover) !important;
-  font-style: italic;
+  background: transparent !important;
+  font-style: normal;
+  color: inherit;
 }
 
 /* Section Titles */
