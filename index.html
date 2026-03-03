@@ -258,6 +258,8 @@
       <li><a href="#section-goal-mocap" class="toc-link" data-section="section-goal-mocap">Goal &times; Mocap</a></li>
       <li><a href="#section-finegrained" class="toc-link" data-section="section-finegrained">Fine-Grained Control</a></li>
       <li><a href="#section-goal-ego" class="toc-link" data-section="section-goal-ego">Goal &times; Egocentric</a></li>
+      <li><a href="#section-sim2sim" class="toc-link" data-section="section-sim2sim">Sim2Sim Transfer</a></li>
+      <li><a href="#section-retarget" class="toc-link" data-section="section-retarget">Motion Retargeting</a></li>
       <li><a href="#BibTeX" class="toc-link" data-section="BibTeX">BibTeX</a></li>
     </ul>
     <div class="toc-progress"><div class="toc-progress-bar" id="toc-progress-bar"></div></div>
@@ -558,10 +560,105 @@
 <!-- End Long-Horizon Goal Following x Egocentric -->
 
 
-<!-- Video carousel -->
-<!-- End video carousel -->
+<!-- Sim2Sim Point Cloud Transfer -->
+<section class="hero teaser" id="section-sim2sim">
+  <div class="hero-body">
+    <br>
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-3">Sim2Sim Transfer <span style="color:#ff3838">&times;</span> Egocentric</h2>
+    </div>
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-three-fifths">
+        <p class="subtitle is-6">
+          Visualization of sim-to-sim transfer with point cloud observations. <span style="color:#6b9bd2;">Blue</span> points represent the egocentric point cloud from the canonical environment, <span style="color:#7bc8a4;">green</span> points show the point cloud after domain randomization, and <span style="color:#d4b96a;">yellow</span> points indicate the object goal positions.
+        </p>
+      </div>
+    </div>
+    <div class="container">
+      <div id="sim2sim-carousel" class="carousel results-carousel">
+        <div class="item">
+          <video preload="metadata" id="sim2sim-1" playsinline controls muted loop width="100%" height="100%">
+            <source src="./static/videos/Sim2sim/sub3_largebox_000_093_090_083_100_100_100.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="item">
+          <video preload="metadata" id="sim2sim-2" playsinline controls muted loop width="100%" height="100%">
+            <source src="./static/videos/Sim2sim/sub7_largebox_000_080_079_078_100_100_100.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="item">
+          <video preload="metadata" id="sim2sim-3" playsinline controls muted loop width="100%" height="100%">
+            <source src="./static/videos/Sim2sim/sub7_largebox_003_088_096_077_100_100_100.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="item">
+          <video preload="metadata" id="sim2sim-4" playsinline controls muted loop width="100%" height="100%">
+            <source src="./static/videos/Sim2sim/sub10_largebox_042_087_085_072_080_080_080 (2).mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="item">
+          <video preload="metadata" id="sim2sim-5" playsinline controls muted loop width="100%" height="100%">
+            <source src="./static/videos/Sim2sim/sub10_largebox_081_091_085_074_080_080_080 (2).mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="item">
+          <video preload="metadata" id="sim2sim-6" playsinline controls muted loop width="100%" height="100%">
+            <source src="./static/videos/Sim2sim/sub14_smallbox_026_120_126_079_080_080_080(1).mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="item">
+          <video preload="metadata" id="sim2sim-7" playsinline controls muted loop width="100%" height="100%">
+            <source src="./static/videos/Sim2sim/sub14_suitcase_023_092_096_074_100_100_100.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="item">
+          <video preload="metadata" id="sim2sim-8" playsinline controls muted loop width="100%" height="100%">
+            <source src="./static/videos/Sim2sim/sub17_suitcase_003_089_090_081_100_100_100 (1).mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="item">
+          <video preload="metadata" id="sim2sim-9" playsinline controls muted loop width="100%" height="100%">
+            <source src="./static/videos/Sim2sim/sub8_largebox_026_124_081_082_100_100_100 (1).mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End Sim2Sim Point Cloud Transfer -->
 
-
+<!-- Motion Retargeting -->
+<section class="hero teaser" id="section-retarget">
+  <div class="hero-body">
+    <br>
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-3">Physics-Driven <span style="color:#7c6ff7">Neural</span> Retargeting</h2>
+    </div>
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-half has-text-centered">
+          <h3 class="title is-5">Retargeted Motion Library</h3>
+          <p class="subtitle is-6">Diverse loco-manipulation motions retargeted from human motion capture to the humanoid embodiment.</p>
+          <div class="item">
+            <video preload="metadata" id="retarget-new" playsinline controls muted loop width="100%">
+              <source src="./static/videos/retarget/new_videoonly_mac.mp4" type="video/mp4">
+            </video>
+          </div>
+        </div>
+        <div class="column is-half has-text-centered">
+          <h3 class="title is-5">Retargeting Augmentation</h3>
+          <p class="subtitle is-6">Beyond object property randomization, we further augment the humanoid motion trajectories themselves to increase skill diversity.</p>
+          <div class="item">
+            <video preload="metadata" id="retarget-all" playsinline controls muted loop width="100%">
+              <source src="./static/videos/retarget/all_2x_videoonly_mac.mp4" type="video/mp4">
+            </video>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End Motion Retargeting -->
 
 
 
