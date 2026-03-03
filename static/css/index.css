@@ -46,14 +46,21 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   font-size: 16px;
-  background: linear-gradient(180deg,
-    #edcfaa 0%,
-    #f2d9b8 10%,
-    #f5e2c8 25%,
-    #f8ead5 45%,
-    #fdf5ec 70%,
-    #ffffff 100%
-  );
+  background-color: #ffffff;
+  background-image:
+    /* subtle warm glow near top-left */
+    radial-gradient(ellipse 80% 50% at 10% 8%, rgba(235, 160, 100, 0.10), transparent),
+    /* soft accent near top-right */
+    radial-gradient(ellipse 60% 40% at 85% 15%, rgba(230, 150, 80, 0.07), transparent),
+    /* main top-to-bottom gradient */
+    linear-gradient(180deg,
+      #fae9d8 0%,
+      #fcf0e4 10%,
+      #fdf4ec 22%,
+      #fef8f4 40%,
+      #fffcfa 65%,
+      #ffffff 100%
+    );
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: relative;
@@ -70,6 +77,29 @@ body {
   position: relative;
   overflow: hidden;
   color: var(--primary-color) !important;
+}
+
+/* Publication link buttons (Paper, arXiv, etc.) */
+.publication-links .button.is-rounded {
+  background: var(--gradient-primary) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(217, 93, 14, 0.25);
+  padding: 0.6em 1.6em;
+}
+
+.publication-links .button.is-rounded .icon {
+  color: #fff !important;
+}
+
+.publication-links .button.is-rounded:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(217, 93, 14, 0.35);
+}
+
+.publication-links .button.is-rounded:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(217, 93, 14, 0.2);
 }
 
 .button.is-dark {
@@ -192,6 +222,7 @@ p {
 .hero.teaser .hero-body > video{
   width: 100%;
   border-radius: 18px;
+  box-shadow: 0 6px 24px rgba(80, 50, 20, 0.12);
 }
 
 .hero .subtitle,
@@ -377,6 +408,7 @@ p {
 .hero.teaser .item video {
   margin: 0;
   border-radius: var(--border-radius);
+  box-shadow: 0 4px 16px rgba(80, 50, 20, 0.10);
   width: 100%;
   height: auto;
 }
