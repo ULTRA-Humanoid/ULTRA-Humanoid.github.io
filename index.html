@@ -248,6 +248,21 @@
 
 
   <main id="main-content">
+
+  <!-- Floating Table of Contents -->
+  <nav class="toc-sidebar" id="toc-sidebar">
+    <div class="toc-header">Contents</div>
+    <ul class="toc-list">
+      <li><a href="#section-abstract" class="toc-link" data-section="section-abstract">Abstract</a></li>
+      <li><a href="#section-tracking" class="toc-link" data-section="section-tracking">Tracking &times; Mocap</a></li>
+      <li><a href="#section-goal-mocap" class="toc-link" data-section="section-goal-mocap">Goal &times; Mocap</a></li>
+      <li><a href="#section-finegrained" class="toc-link" data-section="section-finegrained">Fine-Grained Control</a></li>
+      <li><a href="#section-goal-ego" class="toc-link" data-section="section-goal-ego">Goal &times; Egocentric</a></li>
+      <li><a href="#BibTeX" class="toc-link" data-section="BibTeX">BibTeX</a></li>
+    </ul>
+    <div class="toc-progress"><div class="toc-progress-bar" id="toc-progress-bar"></div></div>
+  </nav>
+
   <section class="hero">
     <div class="hero-body">
       <div class="container is-max-desktop">
@@ -344,7 +359,7 @@
 <!-- End teaser video -->
 
 <!-- Paper abstract -->
-<section class="section hero">
+<section class="section hero" id="section-abstract">
   <div class="container is-max-desktop">
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
@@ -372,7 +387,7 @@
 <!-- End paper abstract -->
 
 <!-- Motion Tracking x Mocap -->
-<section class="hero teaser">
+<section class="hero teaser" id="section-tracking">
   <div class="hero-body">
     <br>
     <div class="columns is-centered has-text-centered">
@@ -442,7 +457,7 @@
 <!-- End Motion Tracking x Mocap -->
 
 <!-- Long-Horizon Goal Following x Mocap -->
-<section class="hero teaser">
+<section class="hero teaser" id="section-goal-mocap">
   <div class="hero-body">
     <br>
     <div class="columns is-centered has-text-centered">
@@ -478,7 +493,7 @@
 <!-- End Long-Horizon Goal Following x Mocap -->
 
 <!-- Fine-Grained Control x Mocap -->
-<section class="hero teaser">
+<section class="hero teaser" id="section-finegrained">
   <div class="hero-body">
     <br>
     <div class="columns is-centered has-text-centered">
@@ -514,7 +529,7 @@
 <!-- End Fine-Grained Control x Mocap -->
 
 <!-- Long-Horizon Goal Following x Egocentric -->
-<section class="hero teaser">
+<section class="hero teaser" id="section-goal-ego">
   <div class="hero-body">
     <br>
     <div class="columns is-centered has-text-centered">

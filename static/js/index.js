@@ -80,14 +80,53 @@ function scrollToTop() {
     });
 }
 
-// Show/hide scroll to top button
+// Show/hide scroll to top button + TOC sidebar + scroll spy
 window.addEventListener('scroll', function() {
-    const scrollButton = document.querySelector('.scroll-to-top');
+    var scrollButton = document.querySelector('.scroll-to-top');
+    var tocSidebar = document.getElementById('toc-sidebar');
+    var progressBar = document.getElementById('toc-progress-bar');
+
+    // Scroll-to-top button visibility
     if (window.pageYOffset > 300) {
         scrollButton.classList.add('visible');
     } else {
         scrollButton.classList.remove('visible');
     }
+
+    // TOC sidebar visibility (show after scrolling past hero)
+    if (tocSidebar) {
+        if (window.pageYOffset > 400) {
+            tocSidebar.classList.add('visible');
+        } else {
+            tocSidebar.classList.remove('visible');
+        }
+    }
+
+    // Reading progress bar
+    if (progressBar) {
+        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        var scrollPercent = (window.pageYOffset / docHeight) * 100;
+        progressBar.style.width = Math.min(scrollPercent, 100) + '%';
+    }
+
+    // Scroll spy: highlight current section in TOC
+    var sections = document.querySelectorAll('[id^="section-"], #BibTeX');
+    var tocLinks = document.querySelectorAll('.toc-link');
+    var currentId = '';
+
+    sections.forEach(function(section) {
+        var rect = section.getBoundingClientRect();
+        if (rect.top <= window.innerHeight * 0.4) {
+            currentId = section.id;
+        }
+    });
+
+    tocLinks.forEach(function(link) {
+        link.classList.remove('active');
+        if (link.getAttribute('data-section') === currentId) {
+            link.classList.add('active');
+        }
+    });
 });
 
 // Autoplay all videos when they scroll into view, pause when they leave.
@@ -191,4 +230,17 @@ $(document).ready(function() {
     bulmaSlider.attach();
 
     setupVideoAutoplay();
+
+    // TOC smooth scroll click handling
+    document.querySelectorAll('.toc-link').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            var targetId = this.getAttribute('data-section');
+            var target = document.getElementById(targetId);
+            if (target) {
+                var offset = target.getBoundingClientRect().top + window.pageYOffset - 40;
+                window.scrollTo({ top: offset, behavior: 'smooth' });
+            }
+        });
+    });
 })
