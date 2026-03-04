@@ -8,11 +8,11 @@
   <!-- TODO: Replace with your paper title and author names -->
   <meta name="title" content="ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation">
   <!-- TODO: Write a compelling 150-160 character description of your research -->
-  <meta name="description" content="Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. We propose ULTRA, a unified framework that introduces a physics-driven retargeting algorithm and a unified multimodal controller for autonomous humanoid whole-body loco-manipulation.">
+  <meta name="description" content="Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.">
   <!-- TODO: Add 5-10 relevant keywords for your research area -->
-  <meta name="keywords" content="Humanoid Loco-Manipulation, Multimodal Control, Motion Retargeting, Whole-Body Control">
+  <meta name="keywords" content="Humanoid Loco-Manipulation Motion Retargeting, Whole-Body Control">
   <!-- TODO: List all authors -->
-  <meta name="author" content="Xialin He, Sirui Xu, Xinyao Li, Runpei Dong, Liuyu Bian, Yu-Xiong Wang, Saurabh Gupta, Liang-Yan Gui">
+  <meta name="author" content="Xialin He, Sirui Xu, Xinyao Li, Runpei Dong, Liuyu Bian, Yu-Xiong Wang, Liang-Yan Gui">
   <meta name="robots" content="index, follow">
   <meta name="language" content="English">
   
@@ -23,23 +23,22 @@
   <!-- TODO: Same as paper title above -->
   <meta property="og:title" content="ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation">
   <!-- TODO: Same as description above -->
-  <meta property="og:description" content="Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. We propose ULTRA, a unified framework that introduces a physics-driven retargeting algorithm and a unified multimodal controller for autonomous humanoid whole-body loco-manipulation.">
+  <meta property="og:description" content="Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.">
   <meta property="og:url" content="https://ultra-humanoid.github.io/">
   <!-- TODO: Create a 1200x630px preview image and update path -->
   <meta property="og:image" content="static/images/social_preview.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation">
-  <meta property="article:published_time" content="2026-02-05T00:00:00.000Z">
-  <meta property="article:author" content="Xialin He">
+  <meta property="article:published_time" content="2026-03-03T00:00:00.000Z">
+  <meta property="article:author" content="Xialin He, Sirui Xu, Xinyao Li, Runpei Dong, Liuyu Bian, Yu-Xiong Wang, Liang-Yan Gui">
   <meta property="article:section" content="Research">
   <meta property="article:tag" content="Humanoid Loco-Manipulation">
-  <meta property="article:tag" content="Multimodal Control">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation">
-  <meta name="twitter:description" content="Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. We propose ULTRA, a unified framework that introduces a physics-driven retargeting algorithm and a unified multimodal controller for autonomous humanoid whole-body loco-manipulation.">
+  <meta name="twitter:description" content="Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.">
   <meta name="twitter:image" content="https://ultra-humanoid.github.io/static/images/social_preview.png">
   <meta name="twitter:image:alt" content="ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation">
 
@@ -51,11 +50,10 @@
   <meta name="citation_author" content="Dong, Runpei">
   <meta name="citation_author" content="Bian, Liuyu">
   <meta name="citation_author" content="Wang, Yu-Xiong">
-  <meta name="citation_author" content="Gupta, Saurabh">
   <meta name="citation_author" content="Gui, Liang-Yan">
   <meta name="citation_publication_date" content="2026">
   <meta name="citation_conference_title" content="arXiv preprint arXiv:2602.06035">
-  <meta name="citation_pdf_url" content="https://ultra-humanoid.github.io/static/pdfs/paper.pdf">
+  <meta name="citation_pdf_url" content="https://ultra-humanoid.github.io/static/pdfs/ULTRA.pdf">
   
   <!-- Additional SEO -->
   <meta name="theme-color" content="#2563eb">
@@ -113,7 +111,7 @@
     "@context": "https://schema.org",
     "@type": "ScholarlyArticle",
     "headline": "ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation",
-    "description": "Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. We propose ULTRA, a unified framework with a physics-driven retargeting algorithm and a unified multimodal controller for autonomous humanoid whole-body loco-manipulation.",
+    "description": "Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.",
     "author": [
       {
         "@type": "Person",
@@ -165,14 +163,6 @@
       },
       {
         "@type": "Person",
-        "name": "Saurabh Gupta",
-        "affiliation": {
-          "@type": "Organization",
-          "name": "University of Illinois Urbana-Champaign"
-        }
-      },
-      {
-        "@type": "Person",
         "name": "Liang-Yan Gui",
         "affiliation": {
           "@type": "Organization",
@@ -189,14 +179,13 @@
     "image": "https://ultra-humanoid.github.io/static/images/social_preview.png",
     "keywords": [
       "Humanoid Loco-Manipulation",
-      "Multimodal Control",
       "Motion Retargeting",
       "Whole-Body Control"
     ],
     "abstract": "Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches remain fundamentally constrained: retargeted data is often scarce or low-quality, methods struggle to scale to large skill repertoires, and, most importantly, they operate by tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To this end, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven retargeting algorithm that translates large-scale motion capture into humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense reference and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. To achieve this, we distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply RL finetuning to expand skill coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without reference motion at test time. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid robot. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.",
-    "citation": "@article{he2025ultra,
+    "citation": "@article{he2026ultra,
       title={ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation},
-      author={He, Xialin and Xu, Sirui and Li, Xinyao and Dong, Runpei and Bian, Liuyu and Wang, Yu-Xiong and Gupta, Saurabh and Gui, Liang-Yan},
+      author={He, Xialin and Xu, Sirui and Li, Xinyao and Dong, Runpei and Bian, Liuyu and Wang, Yu-Xiong and Gui, Liang-Yan},
       journal={arXiv preprint arXiv:2602.06035},
       year={2026}
     }",
@@ -254,12 +243,12 @@
     <div class="toc-header">Contents</div>
     <ul class="toc-list">
       <li><a href="#section-abstract" class="toc-link" data-section="section-abstract">Abstract</a></li>
-      <li><a href="#section-tracking" class="toc-link" data-section="section-tracking">Tracking &times; Mocap</a></li>
-      <li><a href="#section-goal-mocap" class="toc-link" data-section="section-goal-mocap">Goal &times; Mocap</a></li>
+      <li><a href="#section-tracking" class="toc-link" data-section="section-tracking">General Interaction Tracking</a></li>
+      <li><a href="#section-goal-mocap" class="toc-link" data-section="section-goal-mocap">MoCap Goal Following</a></li>
       <li><a href="#section-finegrained" class="toc-link" data-section="section-finegrained">Fine-Grained Control</a></li>
-      <li><a href="#section-goal-ego" class="toc-link" data-section="section-goal-ego">Goal &times; Egocentric</a></li>
-      <li><a href="#section-sim2sim" class="toc-link" data-section="section-sim2sim">Sim2Sim Transfer</a></li>
-      <li><a href="#section-retarget" class="toc-link" data-section="section-retarget">Motion Retargeting</a></li>
+      <li><a href="#section-goal-ego" class="toc-link" data-section="section-goal-ego">Egocentric Goal Following</a></li>
+      <li><a href="#section-sim2sim" class="toc-link" data-section="section-sim2sim">Sim2Sim</a></li>
+      <li><a href="#section-retarget" class="toc-link" data-section="section-retarget">Neural Retargeting</a></li>
       <li><a href="#BibTeX" class="toc-link" data-section="BibTeX">BibTeX</a></li>
     </ul>
     <div class="toc-progress"><div class="toc-progress-bar" id="toc-progress-bar"></div></div>
@@ -303,7 +292,7 @@
                   <div class="column has-text-centered">
                     <div class="publication-links">
                       <span class="link-block">
-                        <a href="_IROS_2026__ULTRA__New_(2)__compressed.pdf" target="_blank"
+                        <a href="static/pdfs/ULTRA.pdf" target="_blank"
                         class="external-link button is-normal is-rounded">
                         <span class="icon">
                           <i class="fas fa-file-pdf"></i>
@@ -353,7 +342,7 @@
       <!-- TODO: Replace with your video description -->
       <br>
       <h2 class="subtitle has-text-centered">
-        ULTRA is an <span style="color:#ff3838;">all-in-one</span> controller for humanoid loco-manipulation that supports dense <span style="color:#ff3838;">motion tracking</span>, <span style="color:#ff3838;">fine-grained control</span>, and <span style="color:#ff3838;">long-horizon goal following</span> with egocentric perception.
+        ULTRA is an <span style="color:#ff3838;">all-in-one</span> controller for humanoid loco-manipulation: track when references exist; act from egocentric perception and sparse intent when they don't.
       </h2>
     </div>
   </div>
@@ -369,7 +358,7 @@
         <div class="content has-text-justified">
           <!-- TODO: Replace with your paper abstract -->
           <p>
-            Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches remain fundamentally constrained: retargeted data is often scarce or low-quality, methods struggle to scale to large skill repertoires, and, most importantly, they operate by tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To this end, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven retargeting algorithm that translates large-scale motion capture into humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense reference and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. To achieve this, we distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply RL finetuning to expand skill coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without reference motion at test time. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid robot. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.
+            Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.
           </p>
         </div>
       </div>
@@ -393,7 +382,7 @@
   <div class="hero-body">
     <br>
     <div class="columns is-centered has-text-centered">
-      <h2 class="title is-3">Motion Tracking <span style="color:#ff3838">&times;</span> Mocap</h2>
+      <h2 class="title is-3">General Interaction Tracking <span style="color:#ff3838">&times;</span> Mocap</h2>
     </div>
     <div class="container">
       <div id="results-carousel" class="carousel results-carousel">
@@ -535,7 +524,7 @@
   <div class="hero-body">
     <br>
     <div class="columns is-centered has-text-centered">
-      <h2 class="title is-3">Long-Horizon Goal Following <span style="color:#ff3838">&times;</span> Egocentric</h2>
+      <h2 class="title is-3">Long-Horizon Goal Following <span style="color:#ff3838">&times;</span> Egocentric Depth</h2>
     </div>
     <div class="container">
       <div class="columns is-multiline is-centered">
@@ -565,12 +554,12 @@
   <div class="hero-body">
     <br>
     <div class="columns is-centered has-text-centered">
-      <h2 class="title is-3">Sim2Sim Transfer <span style="color:#ff3838">&times;</span> Egocentric</h2>
+      <h2 class="title is-3">Sim2Sim Transfer <span style="color:#ff3838">&times;</span> Egocentric Depth</h2>
     </div>
     <div class="columns is-centered has-text-centered">
       <div class="column is-three-fifths">
         <p class="subtitle is-6">
-          Visualization of sim-to-sim transfer with point cloud observations. <span style="color:#6b9bd2;">Blue</span> points represent the egocentric point cloud from the canonical environment, <span style="color:#7bc8a4;">green</span> points show the point cloud after domain randomization, and <span style="color:#d4b96a;">yellow</span> points indicate the object goal positions.
+          <span style="color:#6b9bd2;">Blue</span> points represent the egocentric point cloud, <span style="color:#7bc8a4;">green</span> points denote the noise-perturbed point cloud, and <span style="color:#d4b96a;">yellow</span> points indicate the object goal positions.
         </p>
       </div>
     </div>
@@ -632,13 +621,13 @@
   <div class="hero-body">
     <br>
     <div class="columns is-centered has-text-centered">
-      <h2 class="title is-3">Physics-Driven <span style="color:#7c6ff7">Neural</span> Retargeting</h2>
+      <h2 class="title is-3">Physics-Driven <span style="color:#ff3838">Neural</span> Retargeting</h2>
     </div>
     <div class="container">
       <div class="columns is-centered">
         <div class="column is-half has-text-centered">
           <h3 class="title is-5">Retargeted Motion Library</h3>
-          <p class="subtitle is-6">Diverse loco-manipulation motions retargeted from human motion capture to the humanoid embodiment.</p>
+          <p class="subtitle is-6">Diverse loco-manipulation corpus generated by one retargeting policy that transfers human motion capture to the humanoid embodiment.</p>
           <div class="item">
             <video preload="metadata" id="retarget-new" playsinline controls muted loop width="100%">
               <source src="./static/videos/retarget/new_videoonly_mac.mp4" type="video/mp4">
@@ -646,8 +635,8 @@
           </div>
         </div>
         <div class="column is-half has-text-centered">
-          <h3 class="title is-5">Retargeting Augmentation</h3>
-          <p class="subtitle is-6">Neural retargeting generalizes to unseen scales for both objects and trajectories. Once the policy is trained, diversity can be enabled effortlessly.</p>
+          <h3 class="title is-5">Scalable Retargeting</h3>
+          <p class="subtitle is-6">Neural retargeting generalizes to unseen scales for both objects and trajectories. Once the policy is trained, unlimited data can be acquired effortlessly.</p>
           <div class="item">
             <video preload="metadata" id="retarget-all" playsinline controls muted loop width="100%">
               <source src="./static/videos/retarget/all_2x_videoonly_mac.mp4" type="video/mp4">
@@ -673,9 +662,9 @@
           <span class="copy-text">Copy</span>
         </button>
       </div>
-      <pre id="bibtex-code"><code>@article{he2025ultra,
+      <pre id="bibtex-code"><code>@article{he2026ultra,
       title={ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation},
-      author={He, Xialin and Xu, Sirui and Li, Xinyao and Dong, Runpei and Bian, Liuyu and Wang, Yu-Xiong and Gupta, Saurabh and Gui, Liang-Yan},
+      author={He, Xialin and Xu, Sirui and Li, Xinyao and Dong, Runpei and Bian, Liuyu and Wang, Yu-Xiong and Gui, Liang-Yan},
       journal={arXiv preprint arXiv:2602.06035},
       year={2026}
 }</code></pre>

@@ -1,10 +1,10 @@
 /* Modern CSS Variables for consistent theming */
 :root {
-  --primary-color: #d95d0e;        /* warm burnt orange */
-  --primary-hover: #c44d0a;
+  --primary-color: #b84500;        /* deep burnt sienna */
+  --primary-hover: #923800;
   --secondary-color: #8c7a6a;
 
-  --accent-color: #e07828;
+  --accent-color: #d46010;
 
   /* TEXT COLORS – warm dark for light bg */
   --text-primary: #3d2e1e;
@@ -23,8 +23,8 @@
   --shadow-lg: 0 16px 40px rgba(80, 50, 20, 0.10);
   --shadow-xl: 0 24px 56px rgba(80, 50, 20, 0.12);
 
-  --gradient-primary: linear-gradient(135deg, #e07828 0%, #d95d0e 50%, #c44d0a 100%);
-  --gradient-accent: linear-gradient(135deg, #d95d0e 0%, #c44d0a 50%, #a0522d 100%);
+  --gradient-primary: linear-gradient(135deg, #c95208 0%, #a83d00 50%, #7a2b00 100%);
+  --gradient-accent: linear-gradient(135deg, #b84500 0%, #923800 50%, #6b2800 100%);
   --gradient-subtle: linear-gradient(135deg, #f8f0e3 0%, #fdf8f0 100%);
 
   --border-radius: 12px;
@@ -39,6 +39,7 @@
 /* Smooth scrolling for better UX */
 html {
   scroll-behavior: smooth;
+  background-color: #fae9d8 !important;  /* top-of-gradient warm cream – overscroll bounce area */
 }
 
 body {
@@ -46,7 +47,7 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   font-size: 16px;
-  background-color: #ffffff;
+  background-color: #fae9d8;
   background-image:
     /* subtle warm glow near top-left */
     radial-gradient(ellipse 80% 50% at 10% 8%, rgba(235, 160, 100, 0.10), transparent),
@@ -58,8 +59,8 @@ body {
       #fcf0e4 10%,
       #fdf4ec 22%,
       #fef8f4 40%,
-      #fffcfa 65%,
-      #ffffff 100%
+      #f5ede0 65%,
+      #f0e6d6 100%
     );
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -516,8 +517,8 @@ p {
 
 /* BibTeX Styling */
 pre {
-  background: var(--background-accent) !important;
-  border: 1px solid var(--border-color) !important;
+  background: #2d1f0e !important;
+  border: 1px solid #4a3020 !important;
   border-radius: var(--border-radius) !important;
   padding: 1.5rem !important;
   font-size: 0.9rem !important;
@@ -526,8 +527,8 @@ pre {
 }
 
 code {
-  background: var(--background-accent) !important;
-  color: var(--text-primary) !important;
+  background: transparent !important;
+  color: #f0d9b5 !important;
   font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace !important;
 }
 
