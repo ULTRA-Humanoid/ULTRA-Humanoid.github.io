@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import cssutils, sys; cssutils.log.raiseExceptions=False; s=cssutils.parseFile\\('static/css/index.css'\\); print\\('parsed OK, rules:', len\\(s.cssRules\\)\\)\")",
+      "Bash(python3 -m http.server 8765)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8765/index.html)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8765/static/css/index.css)",
+      "Bash(kill %1)",
+      "WebFetch(domain:handx-project.github.io)",
+      "WebFetch(domain:sirui-xu.github.io)"
+    ]
+  }
+}

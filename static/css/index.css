@@ -1,45 +1,47 @@
 /* Modern CSS Variables for consistent theming */
 :root {
-  --primary-color: #b84500;        /* deep burnt sienna */
-  --primary-hover: #923800;
-  --secondary-color: #8c7a6a;
+  --primary-color: #2e8a9a;        /* deep teal */
+  --primary-hover: #1f6b78;
+  --secondary-color: #64748b;      /* slate-500 */
 
-  --accent-color: #d46010;
+  --accent-color: #4abfcf;         /* light cyan-teal */
 
-  /* TEXT COLORS – warm dark for light bg */
-  --text-primary: #3d2e1e;
-  --text-secondary: #6b5744;
-  --text-light: #9a8776;
+  /* TEXT COLORS – cool dark for light bg */
+  --text-primary: #2d2d2d;
+  --text-secondary: #555555;
+  --text-light: #888888;
 
-  /* BACKGROUND COLORS – warm ivory/cream */
-  --background-primary: #fdf8f0;
-  --background-secondary: #f8f0e3;
-  --background-accent: #f2e8d8;
+  /* BACKGROUND COLORS – clean white + cool tint */
+  --background-primary: #ffffff;
+  --background-secondary: #fafcfd;
+  --background-accent: #f0f7f9;
 
-  --border-color: #e6d9c6;
+  --border-color: #e0e6e8;
 
-  --shadow-sm: 0 1px 3px 0 rgba(80, 50, 20, 0.06);
-  --shadow-md: 0 8px 24px rgba(80, 50, 20, 0.08);
-  --shadow-lg: 0 16px 40px rgba(80, 50, 20, 0.10);
-  --shadow-xl: 0 24px 56px rgba(80, 50, 20, 0.12);
+  --shadow-sm: 0 1px 3px 0 rgba(30, 60, 70, 0.06);
+  --shadow-md: 0 8px 24px rgba(30, 60, 70, 0.08);
+  --shadow-lg: 0 16px 40px rgba(30, 60, 70, 0.10);
+  --shadow-xl: 0 24px 56px rgba(30, 60, 70, 0.12);
 
-  --gradient-primary: linear-gradient(135deg, #c95208 0%, #a83d00 50%, #7a2b00 100%);
-  --gradient-accent: linear-gradient(135deg, #b84500 0%, #923800 50%, #6b2800 100%);
-  --gradient-subtle: linear-gradient(135deg, #f8f0e3 0%, #fdf8f0 100%);
+  --gradient-primary: linear-gradient(135deg, #2e8a9a 0%, #379cab 50%, #4abfcf 100%);
+  --gradient-accent: linear-gradient(135deg, #1f6b78 0%, #2e8a9a 50%, #4abfcf 100%);
+  --gradient-subtle: linear-gradient(135deg, #f0f7f9 0%, #ffffff 100%);
+
+  /* Darker gradient used for title/authors/section headings */
+  --gradient-title: linear-gradient(135deg, #0e4c5a 0%, #1c6978 35%, #2e8a9a 70%, #379cab 100%);
 
   --border-radius: 12px;
   --border-radius-lg: 16px;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Warm glow helpers */
-  --glow-accent: rgba(224, 120, 40, 0.25);
-  --glow-warm: rgba(217, 93, 14, 0.20);
+  --glow-accent: rgba(74, 191, 207, 0.25);
+  --glow-warm: rgba(46, 138, 154, 0.22);
 }
 
 /* Smooth scrolling for better UX */
 html {
   scroll-behavior: smooth;
-  background-color: #fae9d8 !important;  /* top-of-gradient warm cream – overscroll bounce area */
+  background-color: #ffffff !important;
 }
 
 body {
@@ -47,21 +49,16 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   font-size: 16px;
-  background-color: #fae9d8;
+  background-color: #ffffff;
   background-image:
-    /* subtle warm glow near top-left */
-    radial-gradient(ellipse 80% 50% at 10% 8%, rgba(235, 160, 100, 0.10), transparent),
-    /* soft accent near top-right */
-    radial-gradient(ellipse 60% 40% at 85% 15%, rgba(230, 150, 80, 0.07), transparent),
-    /* main top-to-bottom gradient */
+    /* very soft neutral vignette, no teal */
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(226, 232, 235, 0.35), transparent 70%),
     linear-gradient(180deg,
-      #fae9d8 0%,
-      #fcf0e4 10%,
-      #fdf4ec 22%,
-      #fef8f4 40%,
-      #f5ede0 65%,
-      #f0e6d6 100%
+      #ffffff 0%,
+      #fcfdfd 40%,
+      #fafbfc 100%
     );
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: relative;
@@ -85,7 +82,7 @@ body {
   background: var(--gradient-primary) !important;
   color: #fff !important;
   border: none !important;
-  box-shadow: 0 4px 14px rgba(217, 93, 14, 0.25);
+  box-shadow: 0 4px 14px rgba(46, 138, 154, 0.28);
   padding: 0.6em 1.6em;
 }
 
@@ -95,12 +92,33 @@ body {
 
 .publication-links .button.is-rounded:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(217, 93, 14, 0.35);
+  box-shadow: 0 8px 22px rgba(74, 191, 207, 0.40);
 }
 
 .publication-links .button.is-rounded:active {
   transform: translateY(0);
-  box-shadow: 0 3px 10px rgba(217, 93, 14, 0.2);
+  box-shadow: 0 3px 10px rgba(46, 138, 154, 0.22);
+}
+
+/* Ghost / outline variant — use .is-ghost on secondary buttons (e.g. arXiv) */
+.publication-links .button.is-rounded.is-ghost {
+  background: transparent !important;
+  color: var(--primary-color) !important;
+  border: 1.5px solid var(--primary-color) !important;
+  box-shadow: none;
+}
+.publication-links .button.is-rounded.is-ghost .icon {
+  color: var(--primary-color) !important;
+}
+.publication-links .button.is-rounded.is-ghost:hover {
+  background: rgba(46, 138, 154, 0.08) !important;
+  color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(46, 138, 154, 0.18);
+}
+.publication-links .button.is-rounded.is-ghost:hover .icon {
+  color: var(--primary-hover) !important;
 }
 
 .button.is-dark {
@@ -176,32 +194,36 @@ body {
 
 /* Publication Content Styling */
 .publication-title {
-  font-family: 'Inter', sans-serif !important;
-  font-weight: 800 !important;
-  margin-bottom: 2rem !important;
-  line-height: 1.1 !important;
+  font-family: 'Fraunces', 'Inter', serif !important;
+  font-optical-sizing: auto;
+  font-variation-settings: "SOFT" 30, "WONK" 0;
+  font-weight: 700 !important;
+  font-size: clamp(1.6rem, 2.7vw, 2.3rem) !important;
+  letter-spacing: -0.025em;
+  margin-bottom: 1.75rem !important;
+  line-height: 1.18 !important;
   position: relative;
   display: inline-block;
   padding: 0.2em 0.35em;
 
-  background: var(--gradient-primary);
-  background-size: 220% 220%;
+  /* Subtle monochrome gradient for depth — not colorful, just tasteful */
+  background: linear-gradient(180deg, #0a0a0a 0%, #1f1f1f 60%, #2a2a2a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  color: var(--primary-color) !important;
+  color: #1a1a1a !important;
 
-  animation: ip-title-gradient 8s ease-in-out infinite alternate;
+  /* Whisper of a shadow for weight on light bg */
+  filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.08));
 }
-
 
 .publication-title::after {
   content: "";
   position: absolute;
-  inset: 100% 12% auto;
+  inset: 100% 25% auto;
   height: 2px;
   border-radius: 999px;
-  background: var(--gradient-accent);
-  opacity: 0.6;
+  background: linear-gradient(135deg, #1c6978, #2e8a9a, #379cab);
+  opacity: 0.45;
 }
 
 @keyframes ip-title-gradient {
@@ -223,7 +245,7 @@ p {
 .hero.teaser .hero-body > video{
   width: 100%;
   border-radius: 18px;
-  box-shadow: 0 6px 24px rgba(80, 50, 20, 0.12);
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.12);
 }
 
 .hero .subtitle,
@@ -263,7 +285,24 @@ p {
 .publication-authors {
     font-family: 'Inter', sans-serif !important;
     font-weight: 500;
+    font-size: 1.18rem !important;
+    line-height: 1.75;
+    letter-spacing: 0.005em;
     margin-bottom: 0.5rem;
+}
+
+/* The second .publication-authors block is the affiliation line */
+.publication-authors + .publication-authors {
+    font-size: 1.08rem !important;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-top: 0.4rem;
+    letter-spacing: 0.015em;
+}
+
+.publication-authors + .publication-authors .author-block:first-child {
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .publication-venue {
@@ -289,11 +328,15 @@ p {
 }
 
 .publication-authors a {
-   color: var(--primary-color) !important;
+   color: #2d2d2d !important;
    text-decoration: none;
    font-weight: 600;
    transition: var(--transition);
    position: relative;
+}
+
+.publication-authors a:hover {
+   color: var(--primary-color) !important;
 }
 
 .publication-authors a::after {
@@ -311,9 +354,6 @@ p {
     width: 100%;
 }
 
-.publication-authors a:hover {
-    color: var(--primary-hover) !important;
-}
 
 .author-block {
   display: inline-block;
@@ -409,7 +449,7 @@ p {
 .hero.teaser .item video {
   margin: 0;
   border-radius: var(--border-radius);
-  box-shadow: 0 4px 16px rgba(80, 50, 20, 0.10);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.10);
   width: 100%;
   height: auto;
 }
@@ -424,27 +464,27 @@ p {
 
 /* Pagination and Misc Improvements */
 .slider-pagination .slider-page {
-  background: rgba(217, 93, 14, 0.35) !important;
+  background: rgba(46, 138, 154, 0.35) !important;
   border-radius: 50%;
   transition: var(--transition);
 }
 
 .slider-pagination .slider-page.is-active {
-  background: rgba(217, 93, 14, 0.8) !important;
+  background: rgba(74, 191, 207, 0.85) !important;
   transform: scale(1.2);
 }
 
 /* Override carousel navigation arrow colors */
 .slider-navigation-previous,
 .slider-navigation-next {
-  background: rgba(217, 93, 14, 0.6) !important;
-  border: 1px solid rgba(217, 93, 14, 0.7) !important;
+  background: rgba(46, 138, 154, 0.6) !important;
+  border: 1px solid rgba(46, 138, 154, 0.7) !important;
 }
 
 .slider-navigation-previous:hover,
 .slider-navigation-next:hover {
-  background: rgba(217, 93, 14, 0.8) !important;
-  border-color: rgba(217, 93, 14, 0.9) !important;
+  background: rgba(74, 191, 207, 0.85) !important;
+  border-color: rgba(74, 191, 207, 0.95) !important;
 }
 
 .slider-navigation-previous svg,
@@ -453,32 +493,52 @@ p {
 }
 
 .eql-cntrb {
-  font-size: 0.875rem;
+  font-size: 0.82rem;
   background: transparent !important;
-  font-style: normal;
-  color: inherit;
+  font-style: italic;
+  color: var(--text-light) !important;
+  letter-spacing: 0.02em;
 }
 
-/* Section Titles */
+/* Section Titles — editorial display serif */
 .title.is-3 {
-  font-family: 'Inter', sans-serif !important;
-  font-weight: 700 !important;
-  color: var(--text-primary);
-  margin-bottom: 2rem !important;
+  font-family: 'Fraunces', 'Inter', serif !important;
+  font-optical-sizing: auto;
+  font-variation-settings: "SOFT" 30;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+  color: #1a1a1a !important;
+  margin-bottom: 2.25rem !important;
   position: relative;
-  padding-bottom: 1rem;
+  padding-bottom: 1.35rem;
+  display: inline-block;
 }
 
+/* Flanking hairlines + centered teal dot */
+.title.is-3::before,
 .title.is-3::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 3px;
-  background: var(--gradient-accent);
-  border-radius: 2px;
+  bottom: 0.45rem;
+  height: 1px;
+  width: 52px;
+  opacity: 0.6;
+}
+.title.is-3::before {
+  right: calc(50% + 9px);
+  background: linear-gradient(90deg, transparent, var(--primary-color));
+}
+.title.is-3::after {
+  left: calc(50% + 9px);
+  background: linear-gradient(90deg, var(--primary-color), transparent);
+}
+
+/* Centered teal dot as a background on the heading itself */
+.title.is-3 {
+  background-image: radial-gradient(circle, var(--primary-color) 3px, transparent 3.5px);
+  background-repeat: no-repeat;
+  background-position: center calc(100% - 0.25rem);
+  background-size: 10px 10px;
 }
 
 /* Content Improvements */
@@ -490,6 +550,35 @@ p {
 
 .content.has-text-justified p {
   margin-bottom: 1.5rem;
+}
+
+/* Abstract: editorial styling with drop cap and small-caps opening */
+.abstract-content {
+  text-align: justify;
+}
+.abstract-content p {
+  font-size: 1.12rem !important;
+  line-height: 1.8 !important;
+  color: var(--text-primary);
+  hyphens: auto;
+}
+.abstract-content p::first-letter {
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: 3.6rem;
+  line-height: 0.9;
+  float: left;
+  padding: 0.35rem 0.5rem 0 0;
+  margin-top: 0.1rem;
+  color: var(--primary-color);
+  background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.abstract-content p::first-line {
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  font-weight: 500;
 }
 
 /* Footer Improvements */
@@ -517,18 +606,18 @@ p {
 
 /* BibTeX Styling */
 pre {
-  background: #2d1f0e !important;
-  border: 1px solid #4a3020 !important;
+  background: #0f172a !important;              /* slate-900 */
+  border: 1px solid #1e293b !important;        /* slate-800 */
   border-radius: var(--border-radius) !important;
   padding: 1.5rem !important;
   font-size: 0.9rem !important;
   overflow-x: auto;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 code {
   background: transparent !important;
-  color: #f0d9b5 !important;
+  color: #a7e3ec !important;                    /* soft teal for code on dark bg */
   font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace !important;
 }
 
@@ -764,7 +853,7 @@ code {
   }
   
   .publication-title {
-    font-size: 2.5rem !important;
+    font-size: 1.9rem !important;
     line-height: 1.2 !important;
     margin-bottom: 1.5rem !important;
   }
@@ -818,7 +907,7 @@ code {
 
 @media screen and (max-width: 480px) {
   .publication-title {
-    font-size: 2rem !important;
+    font-size: 1.6rem !important;
   }
   
   .hero-body {
@@ -975,16 +1064,16 @@ a:focus {
   right: 1.2rem;
   transform: none;
   z-index: 900;
-  background: rgba(253, 248, 240, 0.88);
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: 16px;
   padding: 1.25rem 1rem;
   width: 200px;
   box-shadow:
-    0 6px 24px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 10px 32px rgba(30, 60, 70, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.4s ease, visibility 0.4s ease;
@@ -1036,17 +1125,17 @@ a:focus {
 
 .toc-link:hover {
   color: var(--text-primary) !important;
-  background: rgba(217, 93, 14, 0.06);
-  border-left-color: rgba(217, 93, 14, 0.3);
+  background: rgba(46, 138, 154, 0.08);
+  border-left-color: rgba(46, 138, 154, 0.35);
   padding-left: 0.8rem;
 }
 
 .toc-link.active {
   color: var(--primary-color) !important;
-  background: rgba(217, 93, 14, 0.08);
+  background: rgba(46, 138, 154, 0.12);
   border-left-color: var(--primary-color);
   font-weight: 600;
-  text-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+  text-shadow: 0 0 12px rgba(74, 191, 207, 0.32);
 }
 
 /* TOC reading progress bar */
@@ -1055,7 +1144,7 @@ a:focus {
   padding-top: 0.5rem;
   border-top: 1px solid var(--border-color);
   height: 3px;
-  background: rgba(217, 93, 14, 0.1);
+  background: rgba(46, 138, 154, 0.14);
   border-radius: 2px;
   overflow: hidden;
 }
