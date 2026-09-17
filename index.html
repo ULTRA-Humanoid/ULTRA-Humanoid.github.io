@@ -3,46 +3,36 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <!-- Primary Meta Tags -->
-  <!-- TODO: Replace with your paper title and author names -->
-  <meta name="title" content="ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation">
-  <!-- TODO: Write a compelling 150-160 character description of your research -->
-  <meta name="description" content="Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.">
-  <!-- TODO: Add 5-10 relevant keywords for your research area -->
-  <meta name="keywords" content="Humanoid Loco-Manipulation Motion Retargeting, Whole-Body Control">
-  <!-- TODO: List all authors -->
+  <title>ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation</title>
+  <meta name="description" content="One controller for humanoid whole-body loco-manipulation: track motion references when available, act from egocentric perception and sparse goals when not.">
+  <meta name="keywords" content="humanoid robot, loco-manipulation, whole-body control, motion retargeting, multimodal control, egocentric perception, reinforcement learning, Unitree G1">
   <meta name="author" content="Xialin He, Sirui Xu, Xinyao Li, Runpei Dong, Liuyu Bian, Yu-Xiong Wang, Liang-Yan Gui">
   <meta name="robots" content="index, follow">
-  <meta name="language" content="English">
-  
-  <!-- Open Graph / Facebook -->
+  <link rel="canonical" href="https://ultra-humanoid.github.io/">
+  <meta name="theme-color" content="#0b1114">
+
+  <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <!-- TODO: Replace with your institution or lab name -->
-  <meta property="og:site_name" content="University of Illinois Urbana-Champaign">
-  <!-- TODO: Same as paper title above -->
+  <meta property="og:site_name" content="ULTRA">
   <meta property="og:title" content="ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation">
-  <!-- TODO: Same as description above -->
-  <meta property="og:description" content="Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.">
+  <meta property="og:description" content="One controller for humanoid whole-body loco-manipulation: track motion references when available, act from egocentric perception and sparse goals when not.">
   <meta property="og:url" content="https://ultra-humanoid.github.io/">
-  <!-- TODO: Create a 1200x630px preview image and update path -->
-  <meta property="og:image" content="static/images/social_preview.png">
+  <meta property="og:image" content="https://ultra-humanoid.github.io/static/images/social_preview.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation">
+  <meta property="og:image:alt" content="A Unitree G1 humanoid carrying a cardboard box across a campus plaza at dusk, controlled by ULTRA.">
   <meta property="article:published_time" content="2026-03-03T00:00:00.000Z">
-  <meta property="article:author" content="Xialin He, Sirui Xu, Xinyao Li, Runpei Dong, Liuyu Bian, Yu-Xiong Wang, Liang-Yan Gui">
   <meta property="article:section" content="Research">
   <meta property="article:tag" content="Humanoid Loco-Manipulation">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation">
-  <meta name="twitter:description" content="Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.">
-  <meta name="twitter:image" content="https://ultra-humanoid.github.io/static/images/social_preview.png">
-  <meta name="twitter:image:alt" content="ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation">
+  <meta name="twitter:description" content="One controller for humanoid whole-body loco-manipulation: track motion references when available, act from egocentric perception and sparse goals when not.">
+  <meta name="twitter:image" content="https://ultra-humanoid.github.io/static/images/social_preview.jpg">
+  <meta name="twitter:image:alt" content="A Unitree G1 humanoid carrying a cardboard box across a campus plaza at dusk, controlled by ULTRA.">
 
-  <!-- Academic/Research Specific -->
+  <!-- Google Scholar -->
   <meta name="citation_title" content="ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation">
   <meta name="citation_author" content="He, Xialin">
   <meta name="citation_author" content="Xu, Sirui">
@@ -52,652 +42,359 @@
   <meta name="citation_author" content="Wang, Yu-Xiong">
   <meta name="citation_author" content="Gui, Liang-Yan">
   <meta name="citation_publication_date" content="2026">
-  <meta name="citation_conference_title" content="IROS">
-  <meta name="citation_pdf_url" content="https://ultra-humanoid.github.io/static/pdfs/ULTRA.pdf">
-  
-  <!-- Additional SEO -->
-  <meta name="theme-color" content="#2563eb">
-  <meta name="msapplication-TileColor" content="#2563eb">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  
-  <!-- Preconnect for performance -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://ajax.googleapis.com">
-  <link rel="preconnect" href="https://documentcloud.adobe.com">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <meta name="citation_conference_title" content="IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)">
+  <meta name="citation_arxiv_id" content="2603.03279">
+  <meta name="citation_pdf_url" content="https://arxiv.org/pdf/2603.03279">
 
-
-  <!-- TODO: Replace with your paper title and authors -->
-  <title>ULTRA</title>
-  
-  <!-- Favicon and App Icons -->
   <link rel="icon" type="image/png" href="static/images/icon.png">
   <link rel="apple-touch-icon" href="static/images/icon.png">
-  
-  <!-- Critical CSS - Load synchronously -->
-  <link rel="stylesheet" href="static/css/bulma.min.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="image" href="static/posters/hero_wild.jpg" fetchpriority="high">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="static/css/index.css">
-  
-  <!-- Non-critical CSS - Load asynchronously -->
-  <link rel="preload" href="static/css/bulma-carousel.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <link rel="preload" href="static/css/bulma-slider.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <link rel="preload" href="static/css/fontawesome.all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <link rel="preload" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  
-  <!-- Fallback for browsers that don't support preload -->
-  <noscript>
-    <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
-    <link rel="stylesheet" href="static/css/bulma-slider.min.css">
-    <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
-  </noscript>
-  
-  <!-- Fonts - Optimized loading -->
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Defer non-critical JavaScript -->
-  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script defer src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
-  <script defer src="static/js/fontawesome.all.min.js"></script>
-  <script defer src="static/js/bulma-carousel.min.js"></script>
-  <script defer src="static/js/bulma-slider.min.js"></script>
+
+  <script>
+    (function () {
+      var h = document.documentElement; h.classList.add('js');
+      if (window.matchMedia && matchMedia('(min-width: 901px) and (min-height: 540px) and (prefers-reduced-motion: no-preference)').matches) {
+        h.classList.add('stage-anim');
+        setTimeout(function () { if (!h.classList.contains('stage-ready')) { h.classList.remove('stage-anim'); h.classList.add('stage-locked'); } }, 5000);
+      }
+    })();
+  </script>
+  <script defer src="static/js/vendor/gsap.min.js"></script>
+  <script defer src="static/js/vendor/ScrollTrigger.min.js"></script>
   <script defer src="static/js/index.js"></script>
-  
-  <!-- Structured Data for Academic Papers -->
+
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "ScholarlyArticle",
     "headline": "ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation",
-    "description": "Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.",
+    "name": "ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation",
+    "description": "One controller for humanoid whole-body loco-manipulation: track motion references when available, act from egocentric perception and sparse goals when not.",
+    "abstract": "Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.",
     "author": [
-      {
-        "@type": "Person",
-        "name": "Xialin He",
-        "affiliation": {
-          "@type": "Organization",
-          "name": "University of Illinois Urbana-Champaign"
-        }
-      },
-      {
-        "@type": "Person",
-        "name": "Sirui Xu",
-        "affiliation": {
-          "@type": "Organization",
-          "name": "University of Illinois Urbana-Champaign"
-        }
-      },
-      {
-        "@type": "Person",
-        "name": "Xinyao Li",
-        "affiliation": {
-          "@type": "Organization",
-          "name": "University of Illinois Urbana-Champaign"
-        }
-      },
-      {
-        "@type": "Person",
-        "name": "Runpei Dong",
-        "affiliation": {
-          "@type": "Organization",
-          "name": "University of Illinois Urbana-Champaign"
-        }
-      },
-      {
-        "@type": "Person",
-        "name": "Liuyu Bian",
-        "affiliation": {
-          "@type": "Organization",
-          "name": "University of Illinois Urbana-Champaign"
-        }
-      },
-      {
-        "@type": "Person",
-        "name": "Yu-Xiong Wang",
-        "affiliation": {
-          "@type": "Organization",
-          "name": "University of Illinois Urbana-Champaign"
-        }
-      },
-      {
-        "@type": "Person",
-        "name": "Liang-Yan Gui",
-        "affiliation": {
-          "@type": "Organization",
-          "name": "University of Illinois Urbana-Champaign"
-        }
-      }
+      {"@type": "Person", "name": "Xialin He", "url": "https://xialin-he.github.io/", "affiliation": {"@type": "Organization", "name": "University of Illinois Urbana-Champaign"}},
+      {"@type": "Person", "name": "Sirui Xu", "url": "https://sirui-xu.github.io/", "affiliation": {"@type": "Organization", "name": "University of Illinois Urbana-Champaign"}},
+      {"@type": "Person", "name": "Xinyao Li", "url": "https://lixinyao11.github.io/", "affiliation": {"@type": "Organization", "name": "University of Illinois Urbana-Champaign"}},
+      {"@type": "Person", "name": "Runpei Dong", "url": "https://runpeidong.web.illinois.edu/", "affiliation": {"@type": "Organization", "name": "University of Illinois Urbana-Champaign"}},
+      {"@type": "Person", "name": "Liuyu Bian", "url": "https://scholar.google.com/citations?user=J2z-0lgAAAAJ&hl=en", "affiliation": {"@type": "Organization", "name": "University of Illinois Urbana-Champaign"}},
+      {"@type": "Person", "name": "Yu-Xiong Wang", "url": "https://yxw.cs.illinois.edu/", "affiliation": {"@type": "Organization", "name": "University of Illinois Urbana-Champaign"}},
+      {"@type": "Person", "name": "Liang-Yan Gui", "url": "https://lgui.cs.illinois.edu/", "affiliation": {"@type": "Organization", "name": "University of Illinois Urbana-Champaign"}}
     ],
-    "datePublished": "2026-02-05",
-    "publisher": {
-      "@type": "Organization",
-      "name": "ArXiv"
-    },
+    "datePublished": "2026-03-03",
+    "publisher": {"@type": "Organization", "name": "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)"},
     "url": "https://ultra-humanoid.github.io/",
-    "image": "https://ultra-humanoid.github.io/static/images/social_preview.png",
-    "keywords": [
-      "Humanoid Loco-Manipulation",
-      "Motion Retargeting",
-      "Whole-Body Control"
-    ],
-    "abstract": "Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches remain fundamentally constrained: retargeted data is often scarce or low-quality, methods struggle to scale to large skill repertoires, and, most importantly, they operate by tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To this end, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven retargeting algorithm that translates large-scale motion capture into humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense reference and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. To achieve this, we distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply RL finetuning to expand skill coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without reference motion at test time. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid robot. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.",
-    "citation": "@inproceedings{he2026ultra,
-      title={ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation},
-      author={He, Xialin and Xu, Sirui and Li, Xinyao and Dong, Runpei and Bian, Liuyu and Wang, Yu-Xiong and Gui, Liang-Yan},
-      booktitle={IROS},
-      year={2026}
-    }",
+    "mainEntityOfPage": "https://ultra-humanoid.github.io/",
+    "sameAs": "https://arxiv.org/abs/2603.03279",
+    "image": "https://ultra-humanoid.github.io/static/images/social_preview.jpg",
+    "keywords": ["Humanoid Loco-Manipulation", "Motion Retargeting", "Whole-Body Control", "Multimodal Control", "Egocentric Perception"],
+    "citation": "@inproceedings{he2026ultra, title={ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation}, author={He, Xialin and Xu, Sirui and Li, Xinyao and Dong, Runpei and Bian, Liuyu and Wang, Yu-Xiong and Gui, Liang-Yan}, booktitle={IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)}, year={2026}}",
     "isAccessibleForFree": true,
-    "license": "https://creativecommons.org/licenses/by/4.0/",
-    "mainEntity": {
-      "@type": "WebPage",
-      "@id": "https://ultra-humanoid.github.io/"
-    },
-    "about": [
-      {
-        "@type": "Thing",
-        "name": "Humanoid Loco-Manipulation"
-      },
-      {
-        "@type": "Thing",
-        "name": "Multimodal Control"
-      }
-    ]
-  }
-  </script>
-  
-  <!-- Website/Organization Structured Data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "ULTRA-Humanoid",
-    "url": "https://ultra-humanoid.github.io",
-    "logo": "https://ultra-humanoid.github.io/static/images/icon.png",
-    "sameAs": [
-      "https://github.com/ULTRA-Humanoid"
-    ]
+    "video": {
+      "@type": "VideoObject",
+      "name": "ULTRA in the wild: humanoid box carrying on a campus plaza",
+      "description": "A Unitree G1 humanoid controlled by ULTRA approaches, lifts, carries and sets down a cardboard box outdoors.",
+      "thumbnailUrl": "https://ultra-humanoid.github.io/static/posters/hero_wild.jpg",
+      "contentUrl": "https://ultra-humanoid.github.io/static/videos/hero/hero_wild_1080.mp4",
+      "uploadDate": "2026-09-16",
+      "duration": "PT7S"
+    }
   }
   </script>
 </head>
 <body>
-<!-- particles.js container -->
-<div id="particles-js"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="read-progress" id="read-progress" aria-hidden="true"></div>
 
-<!-- scripts -->
-<script src="particles.js"></script>
-<script src="static/js/app.js"></script>
+<!-- ============ STAGE: full-bleed video -> title ============ -->
+<header class="stage" id="stage">
+  <div class="stage-video" id="stage-video">
+    <video id="hero-video" class="hero-video" autoplay muted loop playsinline preload="auto"
+           poster="static/posters/hero_wild.jpg"
+           aria-label="A Unitree G1 humanoid controlled by ULTRA lifts, carries and sets down a cardboard box on a campus plaza at dusk."></video>
+    <script>
+      (function () {
+        var v = document.getElementById('hero-video');
+        var c = navigator.connection;
+        var small = window.matchMedia && matchMedia('(max-width: 900px)').matches;
+        var slow = !!(c && (c.saveData || /^(slow-2g|2g|3g)$/.test(c.effectiveType || '')));
+        v.src = (small || slow) ? 'static/videos/hero/hero_wild_720.mp4' : 'static/videos/hero/hero_wild_1080.mp4';
+      })();
+    </script>
+    <div class="stage-scrim" id="stage-scrim"></div>
+  </div>
 
-  <!-- Scroll to Top Button -->
-  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
-    <i class="fas fa-chevron-up"></i>
-  </button>
+  <div class="stage-brand" id="stage-brand" aria-hidden="true">
+    <span class="brand-mark">ULTRA</span>
+    <span class="brand-dot"></span>
+    <span class="brand-venue"><svg class="trophy" viewBox="0 0 24 24" aria-hidden="true"><path class="cup" d="M6 2h12v7a6 6 0 0 1-12 0V2z"/><path class="line" d="M6 5H4.5a2.5 2.5 0 0 0 0 5H6M18 5h1.5a2.5 2.5 0 0 1 0 5H18M12 15v3M8.5 21.5h7M10 18h4a1.5 1.5 0 0 1 1.5 1.5v2h-7v-2A1.5 1.5 0 0 1 10 18z"/></svg>IROS 2026 &middot; Best Paper Award on Mobile Manipulation &middot; Finalist</span>
+  </div>
 
+  <div class="stage-acronym" id="stage-acronym" aria-hidden="true">
+    <span class="ac-letter">U</span><span class="ac-letter">L</span><span class="ac-letter">T</span><span class="ac-letter">R</span><span class="ac-letter">A</span>
+  </div>
+  <p class="stage-kicker" id="stage-kicker" aria-hidden="true">Autonomous humanoid loco-manipulation. In the wild.</p>
+  <div class="scroll-cue" id="scroll-cue" aria-hidden="true"><span>Scroll</span><i></i></div>
 
-  <main id="main-content">
+  <div class="stage-title" id="stage-title">
+    <h1 class="paper-title" id="paper-title" aria-label="ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation"><span class="title-acro"><span class="tl ac">U</span><span class="tl ac">L</span><span class="tl ac">T</span><span class="tl ac">R</span><span class="tl ac">A</span><span class="tl colon">:</span></span>
+      <span class="tw">Unified</span> <span class="tw">Multimodal</span> <span class="tw">Control</span> <span class="tw">for</span> <span class="tw">Autonomous</span> <span class="tw">Humanoid</span> <span class="tw">Whole-Body</span> <span class="tw">Loco-Manipulation</span></h1>
 
-  <!-- Floating Table of Contents -->
-  <nav class="toc-sidebar" id="toc-sidebar">
-    <div class="toc-header">Contents</div>
-    <ul class="toc-list">
-      <li><a href="#section-abstract" class="toc-link" data-section="section-abstract">Abstract</a></li>
-      <li><a href="#section-tracking" class="toc-link" data-section="section-tracking">General Interaction Tracking</a></li>
-      <li><a href="#section-goal-mocap" class="toc-link" data-section="section-goal-mocap">MoCap Goal Following</a></li>
-      <li><a href="#section-finegrained" class="toc-link" data-section="section-finegrained">Fine-Grained Control</a></li>
-      <li><a href="#section-goal-ego" class="toc-link" data-section="section-goal-ego">Egocentric Goal Following</a></li>
-      <li><a href="#section-sim2sim" class="toc-link" data-section="section-sim2sim">Sim2Sim</a></li>
-      <li><a href="#section-retarget" class="toc-link" data-section="section-retarget">Neural Retargeting</a></li>
-      <li><a href="#BibTeX" class="toc-link" data-section="BibTeX">BibTeX</a></li>
-    </ul>
-    <div class="toc-progress"><div class="toc-progress-bar" id="toc-progress-bar"></div></div>
-  </nav>
-
-  <section class="hero">
-    <div class="hero-body">
-      <div class="container is-max-desktop">
-        <div class="columns is-centered">
-          <div class="column has-text-centered">
-            <!-- TODO: Replace with your paper title -->
-            <br><br>
-            <h1 class="title is-2 publication-title">ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation</h1>
-            <div class="is-size-5 publication-authors">
-              <span class="author-block">
-                <a href="https://xialin-he.github.io/" target="_blank">Xialin He</a><sup>*</sup>,</span>
-              <span class="author-block">
-                <a href="https://sirui-xu.github.io/" target="_blank">Sirui Xu</a><sup>*</sup>,</span>
-              <span class="author-block">
-                <a href="https://lixinyao11.github.io/" target="_blank">Xinyao Li</a>,
-              </span>
-              <span class="author-block">
-                <a href="https://runpeidong.web.illinois.edu/" target="_blank">Runpei Dong</a>,
-              </span><br>
-              <span class="author-block">
-                <a href="https://scholar.google.com/citations?user=J2z-0lgAAAAJ&hl=zh-CN" target="_blank">Liuyu Bian</a>,
-              </span>
-              <span class="author-block">
-                <a href="https://yxw.cs.illinois.edu/" target="_blank">Yu-Xiong Wang</a><sup>&dagger;</sup>,
-              <span class="author-block">
-                <a href="https://lgui.cs.illinois.edu/" target="_blank">Liang-Yan Gui</a><sup>&dagger;</sup>
-              </span>
-            </div>
-
-            <div class="is-size-5 publication-authors">
-              <span class="author-block">University of Illinois Urbana-Champaign</span>
-              <br>
-              <span class="eql-cntrb"><small><sup>*</sup>Equal Contribution &nbsp; <sup>&dagger;</sup>Equal Advising</small></span>
-            </div>
-
-            <div class="is-size-5 publication-authors" style="margin-top: 0.75rem;">
-              <span class="author-block"><b style="color:#2e8a9a;">IROS 2026</b></span>
-            </div>
-
-                  <div class="column has-text-centered">
-                    <div class="publication-links">
-                      <span class="link-block">
-                        <a href="static/pdfs/ULTRA.pdf" target="_blank"
-                        class="external-link button is-normal is-rounded">
-                        <span class="icon">
-                          <i class="fas fa-file-pdf"></i>
-                        </span>
-                        <span>Paper</span>
-                      </a>
-                    </span>
-
-                  <!-- TODO: Replace with your GitHub repository URL -->
-                  <!-- <span class="link-block">
-                    <a href="https://github.com/YOUR REPO HERE" target="_blank"
-                    class="external-link button is-normal is-rounded is-dark">
-                    <span class="icon">
-                      <i class="fab fa-github"></i>
-                    </span>
-                    <span>Code</span>
-                  </a>
-                </span> -->
-
-                <span class="link-block">
-                  <a href="https://arxiv.org/abs/2603.03279" target="_blank"
-                  class="external-link button is-normal is-rounded is-ghost">
-                  <span class="icon">
-                    <i class="ai ai-arxiv"></i>
-                  </span>
-                  <span>arXiv</span>
-                </a>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="authors reveal">
+      <span class="au"><a href="https://xialin-he.github.io/" target="_blank" rel="noopener">Xialin He</a><sup>*</sup>,</span>
+      <span class="au"><a href="https://sirui-xu.github.io/" target="_blank" rel="noopener">Sirui Xu</a><sup>*</sup>,</span>
+      <br class="au-br">
+      <span class="au"><a href="https://lixinyao11.github.io/" target="_blank" rel="noopener">Xinyao Li</a>,</span>
+      <span class="au"><a href="https://runpeidong.web.illinois.edu/" target="_blank" rel="noopener">Runpei Dong</a>,</span>
+      <span class="au"><a href="https://scholar.google.com/citations?user=J2z-0lgAAAAJ&amp;hl=en" target="_blank" rel="noopener">Liuyu Bian</a>,</span>
+      <span class="au"><a href="https://yxw.cs.illinois.edu/" target="_blank" rel="noopener">Yu-Xiong Wang</a><sup>&dagger;</sup>,</span>
+      <span class="au"><a href="https://lgui.cs.illinois.edu/" target="_blank" rel="noopener">Liang-Yan Gui</a><sup>&dagger;</sup></span>
+    </div>
+    <div class="affil reveal">University of Illinois Urbana-Champaign</div>
+    <div class="award reveal"><span class="venue-chip award-chip"><svg class="trophy" viewBox="0 0 24 24" aria-hidden="true"><path class="cup" d="M6 2h12v7a6 6 0 0 1-12 0V2z"/><path class="line" d="M6 5H4.5a2.5 2.5 0 0 0 0 5H6M18 5h1.5a2.5 2.5 0 0 1 0 5H18M12 15v3M8.5 21.5h7M10 18h4a1.5 1.5 0 0 1 1.5 1.5v2h-7v-2A1.5 1.5 0 0 1 10 18z"/></svg><span class="award-text"><span class="award-venue">IROS 2026</span><span class="award-sep">&middot;</span>Best Paper Award on Mobile Manipulation<span class="award-sep">&middot;</span><span class="award-status">Finalist</span></span></span></div>
+    <p class="notes reveal"><sup>*</sup>Equal contribution &nbsp;&nbsp; <sup>&dagger;</sup>Equal advising</p>
+    <div class="actions reveal">
+      <a class="btn btn-primary" href="static/pdfs/ULTRA.pdf" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>Paper</a>
+      <a class="btn btn-ghost" href="https://arxiv.org/abs/2603.03279" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>arXiv</a>
+      <a class="btn btn-ghost" href="#worlds">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="m5 12 7 7 7-7"/></svg>Watch</a>
     </div>
   </div>
-</section>
+</header>
 
+<main id="main" tabindex="-1">
 
-<!-- Teaser video-->
-<section class="hero teaser">
-  <div class="container is-max-desktop">
-    <div class="hero-body">
-      <!-- TODO: Replace with your teaser video -->
-      <video poster="" id="tree" autoplay playsinline controls muted loop height="100%">
-        <!-- TODO: Add your video file path here -->
-        <source src="static/videos/ultra_demo_compress.mp4" type="video/mp4">
-      </video>
-      <!-- TODO: Replace with your video description -->
-      <br>
-      <h2 class="subtitle has-text-centered">
-        ULTRA is an <span style="color:#2e8a9a;">all-in-one</span> controller for humanoid loco-manipulation: track when references exist; act from egocentric perception and sparse intent when they don't.
-      </h2>
+  <!-- ============ Real-world deployment ============ -->
+  <section class="worlds" id="worlds" aria-labelledby="worlds-h">
+    <div class="wrap">
+      <p class="eyebrow light">Real-world deployment</p>
+      <h2 id="worlds-h" class="h-display">Same controller, <em>outdoors and in.</em></h2>
+      <p class="lede">ULTRA is an all-in-one controller for humanoid loco-manipulation: it tracks when references exist, and acts from egocentric perception and sparse intent when they don't.</p>
+      <div class="worlds-grid">
+        <figure class="clip clip-lg">
+          <video muted loop playsinline preload="none" data-poster="static/posters/wild_approach.jpg" data-src="static/videos/worlds/wild_approach.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: outdoors, the humanoid walks to a box, lifts it and carries it toward the camera" aria-pressed="false"></button>
+          <figcaption><span class="chip chip-wild">In the wild</span> Campus plaza at dusk: approach, lift and carry.</figcaption>
+        </figure>
+        <figure class="clip">
+          <video muted loop playsinline preload="none" data-poster="static/posters/lab_carry.jpg" data-src="static/videos/worlds/lab_carry.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: in the lab, the humanoid picks up a box, carries it and sets it down" aria-pressed="false"></button>
+          <figcaption><span class="chip chip-lab">In the lab</span> Pick up, carry, set down.</figcaption>
+        </figure>
+        <figure class="clip">
+          <video muted loop playsinline preload="none" data-poster="static/posters/lab_stack.jpg" data-src="static/videos/worlds/lab_stack.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: in the lab, the humanoid takes a box off a stack and places it on the floor" aria-pressed="false"></button>
+          <figcaption><span class="chip chip-lab">In the lab</span> Off the stack, onto the floor.</figcaption>
+        </figure>
+      </div>
     </div>
-  </div>
-</section>
-<!-- End teaser video -->
+  </section>
 
-<!-- Paper abstract -->
-<section class="section hero" id="section-abstract">
-  <div class="container is-max-desktop">
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">Abstract</h2>
-        <div class="content has-text-justified abstract-content">
-          <!-- TODO: Replace with your paper abstract -->
-          <p>
-            Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.
-          </p>
+  <!-- ============ Abstract over the scroll-scrubbed crowd render ============ -->
+  <section class="scene" id="abstract" aria-labelledby="abstract-h">
+    <div class="scene-bg" aria-hidden="true">
+      <video id="scene-video" muted playsinline preload="none" data-poster="static/posters/crowd_scene.jpg" data-src="static/videos/scene/crowd_scene.mp4"></video>
+      <div class="scene-scrim"></div>
+    </div>
+    <div class="scene-content">
+      <div class="wrap narrow glass">
+        <h2 class="eyebrow light" id="abstract-h">Abstract</h2>
+        <p class="abstract-text">Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Overview reel ============ -->
+  <section class="section sheet" id="overview" aria-labelledby="overview-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow">Overview reel</p>
+        <h2 id="overview-h">ULTRA at a glance</h2>
+      </header>
+      <figure class="clip clip-wide">
+        <video muted loop playsinline preload="none" data-poster="static/posters/ultra_demo_compress.jpg" data-src="static/videos/ultra_demo_compress.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: overview reel of ULTRA" aria-pressed="false"></button>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ 01 Tracking x Mocap ============ -->
+  <section class="section alt" id="tracking" aria-labelledby="tracking-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow">01 &middot; Dense references</p>
+        <h2 id="tracking-h">General Interaction Tracking <span class="x">&times;</span> MoCap</h2>
+        <p class="sec-desc">ULTRA executing dense whole-body motion references on the real robot.</p>
+        <div class="tags"><span class="tag">Task spec &middot; dense reference</span><span class="tag">Sensing &middot; motion-capture state</span></div>
+      </header>
+      <div class="strip" data-strip>
+        <div class="strip-track">
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/TrackingxMocap.jpg" data-src="static/videos/motiontracking/TrackingxMocap.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: tracking a motion-capture reference" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/DSC_1738.jpg" data-src="static/videos/motiontracking/DSC_1738.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: tracking a motion-capture reference" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/DSC_1758.jpg" data-src="static/videos/motiontracking/DSC_1758.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: tracking a motion-capture reference" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/DSC_1759.jpg" data-src="static/videos/motiontracking/DSC_1759.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: tracking a motion-capture reference" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/DSC_1769.jpg" data-src="static/videos/motiontracking/DSC_1769.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: tracking a motion-capture reference" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/track0.jpg" data-src="static/videos/motiontracking/track0.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: tracking a motion-capture reference" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/track1.jpg" data-src="static/videos/motiontracking/track1.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: tracking a motion-capture reference" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/track1.5.jpg" data-src="static/videos/motiontracking/track1.5.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: tracking a motion-capture reference" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/track2.jpg" data-src="static/videos/motiontracking/track2.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: tracking a motion-capture reference" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/track-1.jpg" data-src="static/videos/motiontracking/track-1.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: tracking a motion-capture reference" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/track-2.jpg" data-src="static/videos/motiontracking/track-2.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: tracking a motion-capture reference" aria-pressed="false"></button></figure>
+        </div>
+        <div class="strip-nav">
+          <span class="strip-count" aria-live="polite"></span>
+          <button class="strip-btn prev" type="button" aria-label="Previous clips"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+          <button class="strip-btn next" type="button" aria-label="Next clips"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
         </div>
       </div>
     </div>
-    <!-- <div class="columns is-centered has-text-centered">
-        <div class="column is-four-fifths">
-          
-          <div class="pdf-container" style="position: relative; padding-bottom: 57%; height: 0; overflow: hidden; border-radius: 16px; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(30, 64, 175, 0.6); transition: transform 240ms cubic-bezier(0.4,0,0.2,1), box-shadow 300ms ease; cursor: pointer;">
-            <iframe  src="static/pdfs/comic.pdf" width="100%" height="100%" style="position: absolute; top: 0; left: 0; border-radius: 16px; border: none;">
-          </iframe>
-          </div>
+  </section>
 
-        </div>
-      </div>
-  </div> -->
-</section>
-<!-- End paper abstract -->
-
-<!-- Motion Tracking x Mocap -->
-<section class="hero teaser" id="section-tracking">
-  <div class="hero-body">
-    <br>
-    <div class="columns is-centered has-text-centered">
-      <h2 class="title is-3">General Interaction Tracking <span style="color:#2e8a9a">&times;</span> Mocap</h2>
-    </div>
-    <div class="container">
-      <div id="results-carousel" class="carousel results-carousel">
-        <div class="item item-track-main">
-          <video preload="metadata" poster="" id="track-TrackingxMocap" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/motiontracking/TrackingxMocap.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-track0">
-          <video preload="metadata" poster="" id="track-0" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/motiontracking/track0.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-track1">
-          <video preload="metadata" poster="" id="track-1" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/motiontracking/track1.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-track15">
-          <video preload="metadata" poster="" id="track-1-5" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/motiontracking/track1.5.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-track2">
-          <video preload="metadata" poster="" id="track-2" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/motiontracking/track2.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-trackn1">
-          <video preload="metadata" poster="" id="track-neg1" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/motiontracking/track-1.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-trackn2">
-          <video preload="metadata" poster="" id="track-neg2" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/motiontracking/track-2.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-dsc1738">
-          <video preload="metadata" poster="" id="track-DSC1738" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/motiontracking/DSC_1738.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-dsc1758">
-          <video preload="metadata" poster="" id="track-DSC1758" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/motiontracking/DSC_1758.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-dsc1759">
-          <video preload="metadata" poster="" id="track-DSC1759" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/motiontracking/DSC_1759.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-dsc1769">
-          <video preload="metadata" poster="" id="track-DSC1769" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/motiontracking/DSC_1769.mp4" type="video/mp4">
-          </video>
-        </div>
+  <!-- ============ 02 Goal following x Mocap ============ -->
+  <section class="section" id="goal-mocap" aria-labelledby="goal-mocap-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow">02 &middot; Sparse goals</p>
+        <h2 id="goal-mocap-h">Long-Horizon Goal Following <span class="x">&times;</span> MoCap</h2>
+        <p class="sec-desc">Sparse task goals under motion-capture state, chained over long horizons with no reference motion at test time.</p>
+        <div class="tags"><span class="tag">Task spec &middot; sparse goals</span><span class="tag">Sensing &middot; motion-capture state</span></div>
+      </header>
+      <div class="grid grid-3">
+        <figure class="clip"><video muted loop playsinline preload="none" data-poster="static/posters/vae1.jpg" data-src="static/videos/vae/vae1.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: long-horizon goal following" aria-pressed="false"></button></figure>
+        <figure class="clip"><video muted loop playsinline preload="none" data-poster="static/posters/vae2.jpg" data-src="static/videos/vae/vae2.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: long-horizon goal following" aria-pressed="false"></button></figure>
+        <figure class="clip"><video muted loop playsinline preload="none" data-poster="static/posters/vae3.jpg" data-src="static/videos/vae/vae3.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: long-horizon goal following" aria-pressed="false"></button></figure>
       </div>
     </div>
-  </div>
-</section>
-<!-- End Motion Tracking x Mocap -->
+  </section>
 
-<!-- Long-Horizon Goal Following x Mocap -->
-<section class="hero teaser" id="section-goal-mocap">
-  <div class="hero-body">
-    <br>
-    <div class="columns is-centered has-text-centered">
-      <h2 class="title is-3">Long-Horizon Goal Following <span style="color:#2e8a9a">&times;</span> Mocap</h2>
+  <!-- ============ 03 Fine-grained keyboard x Mocap ============ -->
+  <section class="section alt" id="finegrained" aria-labelledby="finegrained-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow">03 &middot; Incremental goals</p>
+        <h2 id="finegrained-h">Fine-Grained Keyboard Control <span class="x">&times;</span> MoCap</h2>
+        <p class="sec-desc">Arrow keys nudge the goal step by step while the controller keeps the whole body coordinated.</p>
+        <div class="tags"><span class="tag">Task spec &middot; keyboard increments</span><span class="tag">Sensing &middot; motion-capture state</span></div>
+      </header>
+      <div class="grid grid-3">
+        <figure class="clip"><video muted loop playsinline preload="none" data-poster="static/posters/0207.jpg" data-src="static/videos/finegrained/0207.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: fine-grained keyboard control" aria-pressed="false"></button></figure>
+        <figure class="clip"><video muted loop playsinline preload="none" data-poster="static/posters/0207_1.jpg" data-src="static/videos/finegrained/0207_1.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: fine-grained keyboard control" aria-pressed="false"></button></figure>
+        <figure class="clip"><video muted loop playsinline preload="none" data-poster="static/posters/0207_2.jpg" data-src="static/videos/finegrained/0207_2.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: fine-grained keyboard control" aria-pressed="false"></button></figure>
+      </div>
     </div>
-    <div class="container">
-      <div class="columns is-multiline is-centered">
-        <div class="column is-one-third">
-          <div class="item">
-            <video preload="metadata" id="vae-1" playsinline controls muted loop width="100%">
-              <source src="./static/videos/vae/vae1.mp4" type="video/mp4">
-            </video>
-          </div>
+  </section>
+
+  <!-- ============ 04 Goal following x Egocentric ============ -->
+  <section class="section" id="goal-ego" aria-labelledby="goal-ego-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow">04 &middot; Egocentric perception</p>
+        <h2 id="goal-ego-h">Long-Horizon Goal Following <span class="x">&times;</span> Egocentric Depth</h2>
+        <p class="sec-desc">Goal following from onboard egocentric depth instead of motion-capture state.</p>
+        <div class="tags"><span class="tag">Task spec &middot; sparse goals</span><span class="tag">Sensing &middot; egocentric depth</span></div>
+      </header>
+      <div class="grid grid-2">
+        <figure class="clip"><video muted loop playsinline preload="none" data-poster="static/posters/Long-HorizonGoalFollowingxEgocentric.jpg" data-src="static/videos/ego/Long-HorizonGoalFollowingxEgocentric.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: egocentric goal following" aria-pressed="false"></button></figure>
+        <figure class="clip"><video muted loop playsinline preload="none" data-poster="static/posters/ego2.jpg" data-src="static/videos/ego/ego2.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: egocentric goal following" aria-pressed="false"></button></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 05 Sim2Sim ============ -->
+  <section class="section alt" id="sim2sim" aria-labelledby="sim2sim-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow">05 &middot; Transfer</p>
+        <h2 id="sim2sim-h">Sim2Sim Transfer <span class="x">&times;</span> Egocentric Depth</h2>
+        <ul class="legend" aria-label="Point cloud legend">
+          <li><span class="sw" style="--c:#4f8fd6"></span>Egocentric point cloud</li>
+          <li><span class="sw" style="--c:#5cb88f"></span>Noise-perturbed point cloud</li>
+          <li><span class="sw" style="--c:#d9b24a"></span>Object goal positions</li>
+        </ul>
+        <div class="tags"><span class="tag">Task spec &middot; sparse goals</span><span class="tag">Sensing &middot; egocentric point cloud</span></div>
+      </header>
+      <div class="strip ratio-4-3" data-strip>
+        <div class="strip-track">
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/sim2sim_01_largebox.jpg" data-src="static/videos/sim2sim/sim2sim_01_largebox.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: sim-to-sim transfer, large box" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/sim2sim_02_largebox.jpg" data-src="static/videos/sim2sim/sim2sim_02_largebox.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: sim-to-sim transfer, large box" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/sim2sim_03_largebox.jpg" data-src="static/videos/sim2sim/sim2sim_03_largebox.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: sim-to-sim transfer, large box" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/sim2sim_04_largebox.jpg" data-src="static/videos/sim2sim/sim2sim_04_largebox.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: sim-to-sim transfer, large box" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/sim2sim_05_largebox.jpg" data-src="static/videos/sim2sim/sim2sim_05_largebox.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: sim-to-sim transfer, large box" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/sim2sim_06_smallbox.jpg" data-src="static/videos/sim2sim/sim2sim_06_smallbox.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: sim-to-sim transfer, small box" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/sim2sim_07_suitcase.jpg" data-src="static/videos/sim2sim/sim2sim_07_suitcase.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: sim-to-sim transfer, suitcase" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/sim2sim_08_suitcase.jpg" data-src="static/videos/sim2sim/sim2sim_08_suitcase.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: sim-to-sim transfer, suitcase" aria-pressed="false"></button></figure>
+          <figure class="clip strip-item"><video muted loop playsinline preload="none" data-poster="static/posters/sim2sim_09_largebox.jpg" data-src="static/videos/sim2sim/sim2sim_09_largebox.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: sim-to-sim transfer, large box" aria-pressed="false"></button></figure>
         </div>
-        <div class="column is-one-third">
-          <div class="item">
-            <video preload="metadata" id="vae-2" playsinline controls muted loop width="100%">
-              <source src="./static/videos/vae/vae2.mp4" type="video/mp4">
-            </video>
-          </div>
-        </div>
-        <div class="column is-one-third">
-          <div class="item">
-            <video preload="metadata" id="vae-3" playsinline controls muted loop width="100%">
-              <source src="./static/videos/vae/vae3.mp4" type="video/mp4">
-            </video>
-          </div>
+        <div class="strip-nav">
+          <span class="strip-count" aria-live="polite"></span>
+          <button class="strip-btn prev" type="button" aria-label="Previous clips"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+          <button class="strip-btn next" type="button" aria-label="Next clips"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
         </div>
       </div>
     </div>
-  </div>
-</section>
-<!-- End Long-Horizon Goal Following x Mocap -->
+  </section>
 
-<!-- Fine-Grained Control x Mocap -->
-<section class="hero teaser" id="section-finegrained">
-  <div class="hero-body">
-    <br>
-    <div class="columns is-centered has-text-centered">
-      <h2 class="title is-3">Fine-Grained Keyboard Control <span style="color:#2e8a9a">&times;</span> Mocap</h2>
-    </div>
-    <div class="container">
-      <div class="columns is-multiline is-centered">
-        <div class="column is-one-third">
-          <div class="item">
-            <video preload="metadata" id="fine-0207" playsinline controls muted loop width="100%">
-              <source src="./static/videos/finegrained/0207.mp4" type="video/mp4">
-            </video>
-          </div>
+  <!-- ============ 06 Data engine ============ -->
+  <section class="section" id="retarget" aria-labelledby="retarget-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow">06 &middot; Data engine</p>
+        <h2 id="retarget-h">Physics-Driven <span class="hl">Neural</span> Retargeting</h2>
+      </header>
+      <div class="grid grid-2 grid-cap">
+        <div>
+          <h3>Retargeted motion library</h3>
+          <p>Diverse loco-manipulation corpus generated by one retargeting policy that transfers human motion capture to the humanoid embodiment.</p>
+          <figure class="clip"><video muted loop playsinline preload="none" data-poster="static/posters/new_videoonly_mac.jpg" data-src="static/videos/retarget/new_videoonly_mac.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: retargeted motion library" aria-pressed="false"></button></figure>
         </div>
-        <div class="column is-one-third">
-          <div class="item">
-            <video preload="metadata" id="fine-0207_1" playsinline controls muted loop width="100%">
-              <source src="./static/videos/finegrained/0207_1.mp4" type="video/mp4">
-            </video>
-          </div>
-        </div>
-        <div class="column is-one-third">
-          <div class="item">
-            <video preload="metadata" id="fine-0207_2" playsinline controls muted loop width="100%">
-              <source src="./static/videos/finegrained/0207_2.mp4" type="video/mp4">
-            </video>
-          </div>
+        <div>
+          <h3>Scalable retargeting</h3>
+          <p>Neural retargeting generalizes to unseen scales for both objects and trajectories. Once the policy is trained, unlimited data can be acquired effortlessly.</p>
+          <figure class="clip"><video muted loop playsinline preload="none" data-poster="static/posters/all_2x_videoonly_mac.jpg" data-src="static/videos/retarget/all_2x_videoonly_mac.mp4"></video><button class="clip-toggle" type="button" aria-label="Pause or play video: retargeting to unseen object and trajectory scales" aria-pressed="false"></button></figure>
         </div>
       </div>
     </div>
-  </div>
-</section>
-<!-- End Fine-Grained Control x Mocap -->
+  </section>
 
-<!-- Long-Horizon Goal Following x Egocentric -->
-<section class="hero teaser" id="section-goal-ego">
-  <div class="hero-body">
-    <br>
-    <div class="columns is-centered has-text-centered">
-      <h2 class="title is-3">Long-Horizon Goal Following <span style="color:#2e8a9a">&times;</span> Egocentric Depth</h2>
-    </div>
-    <div class="container">
-      <div class="columns is-multiline is-centered">
-        <div class="column is-half">
-          <div class="item">
-            <video preload="metadata" id="ego-1" playsinline controls muted loop width="100%">
-              <source src="./static/videos/ego/Long-HorizonGoalFollowingxEgocentric.mp4" type="video/mp4">
-            </video>
-          </div>
-        </div>
-        <div class="column is-half">
-          <div class="item">
-            <video preload="metadata" id="ego-2" playsinline controls muted loop width="100%">
-              <source src="./static/videos/ego/ego2.mp4" type="video/mp4">
-            </video>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- End Long-Horizon Goal Following x Egocentric -->
-
-
-<!-- Sim2Sim Point Cloud Transfer -->
-<section class="hero teaser" id="section-sim2sim">
-  <div class="hero-body">
-    <br>
-    <div class="columns is-centered has-text-centered">
-      <h2 class="title is-3">Sim2Sim Transfer <span style="color:#2e8a9a">&times;</span> Egocentric Depth</h2>
-    </div>
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-three-fifths">
-        <p class="subtitle is-6">
-          <span style="color:#6b9bd2;">Blue</span> points represent the egocentric point cloud, <span style="color:#7bc8a4;">green</span> points denote the noise-perturbed point cloud, and <span style="color:#d4b96a;">yellow</span> points indicate the object goal positions.
-        </p>
-      </div>
-    </div>
-    <div class="container">
-      <div id="sim2sim-carousel" class="carousel results-carousel">
-        <div class="item">
-          <video preload="metadata" id="sim2sim-1" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/Sim2sim/sub3_largebox_000_093_090_083_100_100_100.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item">
-          <video preload="metadata" id="sim2sim-2" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/Sim2sim/sub7_largebox_000_080_079_078_100_100_100.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item">
-          <video preload="metadata" id="sim2sim-3" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/Sim2sim/sub7_largebox_003_088_096_077_100_100_100.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item">
-          <video preload="metadata" id="sim2sim-4" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/Sim2sim/sub10_largebox_042_087_085_072_080_080_080 (2).mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item">
-          <video preload="metadata" id="sim2sim-5" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/Sim2sim/sub10_largebox_081_091_085_074_080_080_080 (2).mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item">
-          <video preload="metadata" id="sim2sim-6" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/Sim2sim/sub14_smallbox_026_120_126_079_080_080_080(1).mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item">
-          <video preload="metadata" id="sim2sim-7" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/Sim2sim/sub14_suitcase_023_092_096_074_100_100_100.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item">
-          <video preload="metadata" id="sim2sim-8" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/Sim2sim/sub17_suitcase_003_089_090_081_100_100_100 (1).mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="item">
-          <video preload="metadata" id="sim2sim-9" playsinline controls muted loop width="100%" height="100%">
-            <source src="./static/videos/Sim2sim/sub8_largebox_026_124_081_082_100_100_100 (1).mp4" type="video/mp4">
-          </video>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- End Sim2Sim Point Cloud Transfer -->
-
-<!-- Motion Retargeting -->
-<section class="hero teaser" id="section-retarget">
-  <div class="hero-body">
-    <br>
-    <div class="columns is-centered has-text-centered">
-      <h2 class="title is-3">Our Data Engine: Physics-Driven <span style="color:#2e8a9a">Neural</span> Retargeting</h2>
-    </div>
-    <div class="container">
-      <div class="columns is-centered">
-        <div class="column is-half has-text-centered">
-          <h3 class="title is-5">Retargeted Motion Library</h3>
-          <p class="subtitle is-6">Diverse loco-manipulation corpus generated by one retargeting policy that transfers human motion capture to the humanoid embodiment.</p>
-          <div class="item">
-            <video preload="metadata" id="retarget-new" playsinline controls muted loop width="100%">
-              <source src="./static/videos/retarget/new_videoonly_mac.mp4" type="video/mp4">
-            </video>
-          </div>
-        </div>
-        <div class="column is-half has-text-centered">
-          <h3 class="title is-5">Scalable Retargeting</h3>
-          <p class="subtitle is-6">Neural retargeting generalizes to unseen scales for both objects and trajectories. Once the policy is trained, unlimited data can be acquired effortlessly.</p>
-          <div class="item">
-            <video preload="metadata" id="retarget-all" playsinline controls muted loop width="100%">
-              <source src="./static/videos/retarget/all_2x_videoonly_mac.mp4" type="video/mp4">
-            </video>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- End Motion Retargeting -->
-
-
-
-
-<!--BibTex citation -->
-  <section class="section" id="BibTeX">
-    <div class="container is-max-desktop content">
-      <div class="bibtex-header">
-        <h2 class="title">BibTeX</h2>
-        <button class="copy-bibtex-btn" onclick="copyBibTeX()" title="Copy BibTeX to clipboard">
-          <i class="fas fa-copy"></i>
-          <span class="copy-text">Copy</span>
+  <!-- ============ BibTeX ============ -->
+  <section class="bibtex" id="bibtex" aria-labelledby="bibtex-h">
+    <div class="wrap">
+      <div class="bib-head">
+        <h2 id="bibtex-h">BibTeX</h2>
+        <button class="copy-btn" id="copy-bib" type="button" aria-label="Copy BibTeX to clipboard">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="copy-label" aria-live="polite">Copy</span>
         </button>
       </div>
-      <pre id="bibtex-code"><code>@inproceedings{he2026ultra,
-      title={ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation},
-      author={He, Xialin and Xu, Sirui and Li, Xinyao and Dong, Runpei and Bian, Liuyu and Wang, Yu-Xiong and Gui, Liang-Yan},
-      booktitle={IROS},
-      year={2026}
+<pre><code id="bibtex-code">@inproceedings{he2026ultra,
+  title     = {ULTRA: Unified Multimodal Control for Autonomous Humanoid Whole-Body Loco-Manipulation},
+  author    = {He, Xialin and Xu, Sirui and Li, Xinyao and Dong, Runpei and Bian, Liuyu and Wang, Yu-Xiong and Gui, Liang-Yan},
+  booktitle = {IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  year      = {2026}
 }</code></pre>
     </div>
-</section>
-<!--End BibTex citation -->
+  </section>
+</main>
 
-
-  <footer class="footer">
-  <div class="container">
-    <div class="columns is-centered">
-      <div class="column is-8">
-        <div class="content">
-
-          <p>
-            This page was adopted from the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a>.
-          </p>
-
-        </div>
-      </div>
-    </div>
+<footer class="footer">
+  <div class="wrap">
+    <p>&copy; 2026 the ULTRA authors, University of Illinois Urbana-Champaign.</p>
   </div>
 </footer>
 
-<!-- Statcounter tracking code -->
-  
-<!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
-
-    <!-- End of Statcounter Code -->
-
-  </body>
-  </html>
+<nav class="rail" id="rail" aria-label="Page sections">
+  <a href="#worlds"><span>Real world</span></a>
+  <a href="#abstract"><span>Abstract</span></a>
+  <a href="#overview"><span>Overview</span></a>
+  <a href="#tracking"><span>Tracking</span></a>
+  <a href="#goal-mocap"><span>Goal following</span></a>
+  <a href="#finegrained"><span>Keyboard control</span></a>
+  <a href="#goal-ego"><span>Egocentric</span></a>
+  <a href="#sim2sim"><span>Sim2Sim</span></a>
+  <a href="#retarget"><span>Retargeting</span></a>
+  <a href="#bibtex"><span>BibTeX</span></a>
+</nav>
+<button class="to-top" id="to-top" type="button" aria-label="Back to top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
+</body>
+</html>

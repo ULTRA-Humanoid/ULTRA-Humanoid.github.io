@@ -1,246 +1,330 @@
-window.HELP_IMPROVE_VIDEOJS = false;
+/* ULTRA project page - behaviour
+   - hero stage: scroll-driven video -> title transition (GSAP ScrollTrigger, desktop only)
+   - clips: lazy source loading + autoplay/pause in view + click to pause
+   - filmstrips, rail nav, reading progress, BibTeX copy
+*/
+(function () {
+  'use strict';
 
-// More Works Dropdown Functionality
-function toggleMoreWorks() {
-    const dropdown = document.getElementById('moreWorksDropdown');
-    const button = document.querySelector('.more-works-btn');
-    
-    if (dropdown.classList.contains('show')) {
-        dropdown.classList.remove('show');
-        button.classList.remove('active');
-    } else {
-        dropdown.classList.add('show');
-        button.classList.add('active');
-    }
-}
+  var d = document, w = window;
+  var html = d.documentElement;
+  var $ = function (s, r) { return (r || d).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || d).querySelectorAll(s)); };
+  var supportsIO = 'IntersectionObserver' in w;
 
-// Close dropdown when clicking outside
-document.addEventListener('click', function(event) {
-    const container = document.querySelector('.more-works-container');
-    const dropdown = document.getElementById('moreWorksDropdown');
-    const button = document.querySelector('.more-works-btn');
-    
-    if (container && !container.contains(event.target)) {
-        dropdown.classList.remove('show');
-        button.classList.remove('active');
-    }
-});
-
-// Close dropdown on escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const dropdown = document.getElementById('moreWorksDropdown');
-        const button = document.querySelector('.more-works-btn');
-        dropdown.classList.remove('show');
-        button.classList.remove('active');
-    }
-});
-
-// Copy BibTeX to clipboard
-function copyBibTeX() {
-    const bibtexElement = document.getElementById('bibtex-code');
-    const button = document.querySelector('.copy-bibtex-btn');
-    const copyText = button.querySelector('.copy-text');
-    
-    if (bibtexElement) {
-        navigator.clipboard.writeText(bibtexElement.textContent).then(function() {
-            // Success feedback
-            button.classList.add('copied');
-            copyText.textContent = 'Cop';
-            
-            setTimeout(function() {
-                button.classList.remove('copied');
-                copyText.textContent = 'Copy';
-            }, 2000);
-        }).catch(function(err) {
-            console.error('Failed to copy: ', err);
-            // Fallback for older browsers
-            const textArea = document.createElement('textarea');
-            textArea.value = bibtexElement.textContent;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            
-            button.classList.add('copied');
-            copyText.textContent = 'Cop';
-            setTimeout(function() {
-                button.classList.remove('copied');
-                copyText.textContent = 'Copy';
-            }, 2000);
-        });
-    }
-}
-
-// Scroll to top functionality
-function scrollToTop() {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-}
-
-// Show/hide scroll to top button + TOC sidebar + scroll spy
-window.addEventListener('scroll', function() {
-    var scrollButton = document.querySelector('.scroll-to-top');
-    var tocSidebar = document.getElementById('toc-sidebar');
-    var progressBar = document.getElementById('toc-progress-bar');
-
-    // Scroll-to-top button visibility
-    if (window.pageYOffset > 300) {
-        scrollButton.classList.add('visible');
-    } else {
-        scrollButton.classList.remove('visible');
-    }
-
-    // TOC sidebar visibility (show after scrolling past hero)
-    if (tocSidebar) {
-        if (window.pageYOffset > 400) {
-            tocSidebar.classList.add('visible');
-        } else {
-            tocSidebar.classList.remove('visible');
-        }
-    }
-
-    // Reading progress bar
-    if (progressBar) {
-        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        var scrollPercent = (window.pageYOffset / docHeight) * 100;
-        progressBar.style.width = Math.min(scrollPercent, 100) + '%';
-    }
-
-    // Scroll spy: highlight current section in TOC
-    var sections = document.querySelectorAll('[id^="section-"], #BibTeX');
-    var tocLinks = document.querySelectorAll('.toc-link');
-    var currentId = '';
-
-    sections.forEach(function(section) {
-        var rect = section.getBoundingClientRect();
-        if (rect.top <= window.innerHeight * 0.4) {
-            currentId = section.id;
-        }
-    });
-
-    tocLinks.forEach(function(link) {
-        link.classList.remove('active');
-        if (link.getAttribute('data-section') === currentId) {
-            link.classList.add('active');
-        }
-    });
-});
-
-// Autoplay all videos when they scroll into view, pause when they leave.
-// This avoids mobile Safari's limit on simultaneous video playback.
-function setupVideoAutoplay() {
-    const videos = document.querySelectorAll('video');
-
-    if (videos.length === 0) return;
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            const video = entry.target;
-            if (entry.isIntersecting) {
-                video.play().catch(() => {});
-            } else {
-                video.pause();
-            }
-        });
-    }, {
-        threshold: 0.25
-    });
-
-    videos.forEach(video => {
-        observer.observe(video);
-    });
-}
-
-var INTERP_BASE = "https://homes.cs.washington.edu/~kpar/nerfies/interpolation/stacked";
-var NUM_INTERP_FRAMES = 240;
-
-var interp_images = [];
-function preloadInterpolationImages() {
-  for (var i = 0; i < NUM_INTERP_FRAMES; i++) {
-    var path = INTERP_BASE + '/' + String(i).padStart(6, '0') + '.jpg';
-    interp_images[i] = new Image();
-    interp_images[i].src = path;
+  function safePlay(v) { var p = v.play(); if (p && typeof p.catch === 'function') p.catch(function () {}); }
+  function ensureSource(v) {
+    if (v.dataset.poster && !v.getAttribute('poster')) v.poster = v.dataset.poster;
+    if (v.dataset.src && !v.getAttribute('src')) { v.src = v.dataset.src; v.load(); }
   }
-}
 
-function setInterpolationImage(i) {
-  var image = interp_images[i];
-  image.ondragstart = function() { return false; };
-  image.oncontextmenu = function() { return false; };
-  $('#interpolation-image-wrapper').empty().append(image);
-}
-
-
-$(document).ready(function() {
-    // Check for click events on the navbar burger icon
-    $(".navbar-burger").click(function() {
-      // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
-      $(".navbar-burger").toggleClass("is-active");
-      $(".navbar-menu").toggleClass("is-active");
-
-    });
-
-    var options = {
-			slidesToScroll: 1,
-			slidesToShow: 3,
-			loop: true,
-			infinite: true,
-			autoplay: true,
-			autoplaySpeed: 8000,
+  /* ---------------------------------------------------------------- clips */
+  function setupClips() {
+    var clips = $$('.clip');
+    var vids = clips.map(function (c) { return $('video', c); }).filter(Boolean);
+    var hero = $('#hero-video');
+    var sceneVideo = $('#scene-video');
+    if (sceneVideo) {
+      /* decorative 5 MB render: phones and data-saver users get the poster only; larger screens loop it in view (anim mode scrubs it instead) */
+      var conn = navigator.connection;
+      var wantScene = w.matchMedia('(min-width: 700px)').matches && !(conn && conn.saveData);
+      if (wantScene) { sceneVideo.loop = true; vids.push(sceneVideo); }
+      else if (sceneVideo.dataset.poster) { sceneVideo.poster = sceneVideo.dataset.poster; }
     }
 
-		// Initialize all div with carousel class
-    var carousels = bulmaCarousel.attach('.carousel', options);
+    var loadIO = supportsIO ? new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var v = e.target;
+        ensureSource(v);
+        loadIO.unobserve(v);
+      });
+    }, { rootMargin: '120% 60% 120% 60%' }) : null;
 
-    // Pause carousel autoplay when not visible, resume when scrolled into view
-    var carouselObserver = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-            var carousel = entry.target.bulmaCarousel;
-            if (!carousel) return;
-            if (entry.isIntersecting) {
-                carousel.play();
-            } else {
-                carousel.pause();
-            }
-        });
-    }, { threshold: 0.2 });
+    var playIO = supportsIO ? new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var v = e.target;
+        if (e.intersectionRatio >= 0.35) {
+          if (v.paused && !v.dataset.userPaused) { ensureSource(v); safePlay(v); }
+        } else if (!v.paused) {
+          v.pause();
+        }
+      });
+    }, { threshold: [0, 0.35, 0.7] }) : null;
 
-    for (var i = 0; i < carousels.length; i++) {
-        carouselObserver.observe(carousels[i].element);
+    vids.forEach(function (v) {
+      if (loadIO) loadIO.observe(v); else ensureSource(v);
+      if (playIO) playIO.observe(v);
+    });
+    if (hero && playIO) playIO.observe(hero);
+
+    clips.forEach(function (fig) {
+      var v = $('video', fig), btn = $('.clip-toggle', fig);
+      if (!v) return;
+      var toggle = function () {
+        if (v.paused) {
+          delete v.dataset.userPaused;
+          fig.classList.remove('is-paused');
+          ensureSource(v);
+          safePlay(v);
+        } else {
+          v.dataset.userPaused = '1';
+          fig.classList.add('is-paused');
+          v.pause();
+        }
+        if (btn) btn.setAttribute('aria-pressed', v.paused ? 'true' : 'false');
+      };
+      fig.addEventListener('click', toggle);
+    });
+  }
+
+  /* --------------------------------------------------------------- strips */
+  function setupStrips() {
+    $$('[data-strip]').forEach(function (strip) {
+      var track = $('.strip-track', strip);
+      var items = $$('.strip-item', strip);
+      var prev = $('.strip-btn.prev', strip);
+      var next = $('.strip-btn.next', strip);
+      var count = $('.strip-count', strip);
+      if (!track || !items.length) return;
+
+      var step = function () {
+        var gap = parseFloat(getComputedStyle(track).columnGap) || 16;
+        return items[0].getBoundingClientRect().width + gap;
+      };
+      var update = function () {
+        var max = track.scrollWidth - track.clientWidth;
+        var atStart = track.scrollLeft <= 4, atEnd = track.scrollLeft >= max - 4;
+        strip.classList.toggle('at-start', atStart);
+        strip.classList.toggle('at-end', atEnd);
+        if (prev) prev.disabled = atStart;
+        if (next) next.disabled = atEnd;
+        if (count) {
+          var idx = atEnd ? items.length : Math.min(items.length, Math.round(track.scrollLeft / step()) + 1);
+          count.textContent = idx + ' / ' + items.length;
+        }
+        /* cards hidden inside the scroller never intersect the viewport, so prefetch the next screenful by hand */
+        var r = strip.getBoundingClientRect();
+        if (r.top < w.innerHeight * 1.5 && r.bottom > -w.innerHeight * 0.5) {
+          var limit = track.scrollLeft + track.clientWidth * 2;
+          items.forEach(function (it) { if (it.offsetLeft < limit) { var v = $('video', it); if (v) ensureSource(v); } });
+        }
+      };
+      if (prev) prev.addEventListener('click', function () { track.scrollBy({ left: -step(), behavior: 'smooth' }); });
+      if (next) next.addEventListener('click', function () { track.scrollBy({ left: step(), behavior: 'smooth' }); });
+      track.addEventListener('scroll', update, { passive: true });
+      w.addEventListener('resize', update);
+      w.addEventListener('scroll', update, { passive: true });
+      update();
+    });
+  }
+
+  /* ------------------------------------------- progress, rail, back-to-top */
+  function setupChrome() {
+    var bar = $('#read-progress'), toTop = $('#to-top'), rail = $('#rail');
+    var links = rail ? $$('a', rail) : [];
+    var sections = links.map(function (a) { return d.getElementById(a.getAttribute('href').slice(1)); });
+    var ticking = false;
+
+    function update() {
+      ticking = false;
+      var y = w.pageYOffset || html.scrollTop;
+      var max = html.scrollHeight - w.innerHeight;
+      if (bar) bar.style.width = (max > 0 ? Math.min(100, (y / max) * 100) : 0) + '%';
+      if (toTop) toTop.classList.toggle('visible', y > 900);
+
+      var first = sections[0];
+      var pastStage = first ? first.getBoundingClientRect().top < w.innerHeight * 0.6 : y > 600;
+      if (rail) rail.classList.toggle('visible', pastStage);
+
+      var line = w.innerHeight * 0.45, current = -1;
+      sections.forEach(function (s, i) { if (s && s.getBoundingClientRect().top <= line) current = i; });
+      if (y + w.innerHeight >= html.scrollHeight - 2) current = sections.length - 1;
+      links.forEach(function (a, i) {
+        var on = i === current;
+        a.classList.toggle('is-active', on);
+        if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+      });
     }
+    w.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; w.requestAnimationFrame(update); }
+    }, { passive: true });
+    w.addEventListener('resize', update);
+    if (toTop) toTop.addEventListener('click', function () { w.scrollTo({ top: 0, behavior: 'smooth' }); });
+    update();
+  }
 
-    /*var player = document.getElementById('interpolation-video');
-    player.addEventListener('loadedmetadata', function() {
-      $('#interpolation-slider').on('input', function(event) {
-        console.log(this.value, player.duration);
-        player.currentTime = player.duration / 100 * this.value;
-      })
-    }, false);*/
-    preloadInterpolationImages();
-
-    $('#interpolation-slider').on('input', function(event) {
-      setInterpolationImage(this.value);
+  /* --------------------------------------------------------------- bibtex */
+  function setupBibtex() {
+    var btn = $('#copy-bib'), code = $('#bibtex-code');
+    if (!btn || !code) return;
+    var label = $('.copy-label', btn), timer;
+    var done = function (ok) {
+      btn.classList.toggle('copied', ok);
+      label.textContent = ok ? 'Copied' : 'Copy failed';
+      clearTimeout(timer);
+      timer = setTimeout(function () { btn.classList.remove('copied'); label.textContent = 'Copy'; }, 2000);
+    };
+    var fallback = function (text) {
+      try {
+        var ta = d.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        d.body.appendChild(ta); ta.select();
+        var ok = d.execCommand('copy');
+        d.body.removeChild(ta);
+        done(ok);
+      } catch (e) { done(false); }
+    };
+    btn.addEventListener('click', function () {
+      var text = code.textContent;
+      if (navigator.clipboard && w.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function () { done(true); }, function () { fallback(text); });
+      } else {
+        fallback(text);
+      }
     });
-    setInterpolationImage(0);
-    $('#interpolation-slider').prop('max', NUM_INTERP_FRAMES - 1);
+  }
 
-    bulmaSlider.attach();
+  /* ---------------------------------------------------------------- stage */
+  function setupStage() {
+    var stage = $('#stage');
+    if (!stage) return;
+    if (!w.gsap || !w.ScrollTrigger) { html.classList.remove('stage-anim'); return; }
+    gsap.registerPlugin(ScrollTrigger);
 
-    setupVideoAutoplay();
+    var mm = gsap.matchMedia();
+    mm.add('(min-width: 901px) and (min-height: 540px) and (prefers-reduced-motion: no-preference)', function () {
+      var videoWrap = $('#stage-video'), scrim = $('#stage-scrim'), brand = $('#stage-brand');
+      var kicker = $('#stage-kicker'), cue = $('#scroll-cue'), titleBlock = $('#stage-title');
+      var letters = $$('#stage-acronym .ac-letter');
+      var targets = $$('#paper-title .tl.ac');
+      var colon = $('#paper-title .tl.colon');
+      var words = $$('#paper-title .tw');
+      var meta = $$('#stage-title .reveal');
+      if (!videoWrap || !titleBlock || letters.length !== targets.length || html.classList.contains('stage-locked')) { html.classList.remove('stage-anim'); return; }
 
-    // TOC smooth scroll click handling
-    document.querySelectorAll('.toc-link').forEach(function(link) {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            var targetId = this.getAttribute('data-section');
-            var target = document.getElementById(targetId);
-            if (target) {
-                var offset = target.getBoundingClientRect().top + window.pageYOffset - 40;
-                window.scrollTo({ top: offset, behavior: 'smooth' });
-            }
+      html.classList.add('stage-anim');
+
+      /* measurements (layout metrics ignore transforms, so they are safe at any scroll progress) */
+      var M = { video: { scale: 0.7, y: 0, radius: 30 }, letters: letters.map(function () { return { x: 0, y: 0, scale: 0.2 }; }) };
+      function layoutRect(el) {
+        var x = 0, y = 0, n = el;
+        while (n && n !== stage) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+        return { x: x, y: y, w: el.offsetWidth, h: el.offsetHeight };
+      }
+      var measuredAt = -1;
+      function fresh() { /* getters run after ScrollTrigger has re-applied the pin with the new viewport size */
+        var now = performance.now();
+        if (now - measuredAt > 16) { measure(); measuredAt = now; }
+        return M;
+      }
+      function measure() {
+        var vw = stage.clientWidth, vh = stage.clientHeight;
+        if (!vw || !vh) return;
+        var tb = layoutRect(titleBlock);
+        var gap = Math.max(22, vh * 0.045), bottom = Math.max(22, vh * 0.05), side = Math.max(24, vw * 0.07);
+        var availH = vh - (tb.y + tb.h + gap) - bottom;
+        var s = Math.min(availH / vh, (vw - 2 * side) / vw, 0.8);
+        s = Math.max(s, 0.3);
+        var cardH = vh * s, cy = tb.y + tb.h + gap + cardH / 2;
+        M.video = { scale: s, y: cy - vh / 2, radius: 22 / s };
+        M.letters = letters.map(function (el, i) {
+          var a = layoutRect(el), b = layoutRect(targets[i]);
+          var fa = parseFloat(getComputedStyle(el).fontSize) || 1;
+          var fb = parseFloat(getComputedStyle(targets[i]).fontSize) || 1;
+          return {
+            x: (b.x + b.w / 2) - (a.x + a.w / 2),
+            y: (b.y + b.h / 2) - (a.y + a.h / 2),
+            scale: fb / fa
+          };
         });
+      }
+
+      gsap.set(targets, { opacity: 0 });
+      gsap.set(colon, { opacity: 0 });
+      gsap.set(words, { opacity: 0, y: 16 });
+      gsap.set(meta, { opacity: 0, y: 18 });
+      html.classList.add('stage-ready');
+
+      var tl = gsap.timeline({ defaults: { ease: 'none' } });
+      tl.to(cue, { autoAlpha: 0, duration: 0.08 }, 0)
+        .to([kicker, brand], { autoAlpha: 0, y: -16, duration: 0.18 }, 0.02)
+        .to(videoWrap, {
+          scale: function () { return fresh().video.scale; },
+          y: function () { return fresh().video.y; },
+          borderRadius: function () { return fresh().video.radius + 'px'; },
+          ease: 'power2.inOut', duration: 0.58
+        }, 0.14)
+        .to(scrim, { opacity: 0.25, duration: 0.5 }, 0.14)
+        .to(letters, {
+          x: function (i) { return fresh().letters[i].x; },
+          y: function (i) { return fresh().letters[i].y; },
+          scale: function (i) { return fresh().letters[i].scale; },
+          ease: 'power2.inOut', duration: 0.58
+        }, 0.14)
+        .to(letters, { opacity: 0, duration: 0.04 }, 0.72)
+        .to(targets, { opacity: 1, duration: 0.04 }, 0.72)
+        .to(colon, { opacity: 1, duration: 0.06 }, 0.75)
+        .to(words, { opacity: 1, y: 0, duration: 0.14, stagger: 0.018, ease: 'power1.out' }, 0.74)
+        .to(meta, { opacity: 1, y: 0, duration: 0.16, stagger: 0.05, ease: 'power1.out' }, 0.84);
+
+      ScrollTrigger.create({
+        trigger: stage,
+        start: 'top top',
+        end: '+=170%',
+        pin: true,
+        scrub: 0.6,
+        animation: tl,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onRefreshInit: measure
+      });
+      measure();
+
+      /* scene: the crowd render behind the abstract is scrubbed by scroll instead of playing */
+      var scene = $('#abstract'), sceneVideo = $('#scene-video');
+      if (scene && sceneVideo) {
+        sceneVideo.dataset.userPaused = '1';
+        sceneVideo.loop = false;
+        sceneVideo.pause();
+        var proxy = { t: 0 }, lastT = -1, fellBack = false;
+        var fallbackPlay = function () { /* server without Range support: media is not seekable -> just loop it */
+          if (fellBack) return;
+          fellBack = true;
+          delete sceneVideo.dataset.userPaused;
+          sceneVideo.loop = true;
+          safePlay(sceneVideo);
+        };
+        var seek = function () {
+          if (fellBack || sceneVideo.readyState < 1) return;
+          if (sceneVideo.readyState >= 3 && !(sceneVideo.seekable.length && sceneVideo.seekable.end(0) > 1)) { fallbackPlay(); return; }
+          var t = proxy.t * (sceneVideo.duration || 0);
+          if (Math.abs(t - lastT) > 0.02) { lastT = t; sceneVideo.currentTime = t; }
+        };
+        sceneVideo.addEventListener('canplay', seek);
+        sceneVideo.addEventListener('loadedmetadata', seek);
+        ScrollTrigger.create({
+          trigger: scene, start: 'top bottom', end: 'bottom bottom', scrub: 0.5,
+          animation: gsap.to(proxy, { t: 1, ease: 'none', onUpdate: seek })
+        });
+      }
+
+      return function () {
+        html.classList.remove('stage-anim'); html.classList.remove('stage-ready');
+        if (sceneVideo) { delete sceneVideo.dataset.userPaused; sceneVideo.loop = true; }
+      };
     });
-})
+
+    if (d.fonts && d.fonts.ready) d.fonts.ready.then(function () { ScrollTrigger.refresh(); });
+  }
+
+  function init() {
+    setupClips();
+    setupStrips();
+    setupChrome();
+    setupBibtex();
+    setupStage();
+  }
+  if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', init); else init();
+})();
