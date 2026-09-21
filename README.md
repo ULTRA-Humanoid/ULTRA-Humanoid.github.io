@@ -14,7 +14,7 @@ Xialin He\*, Sirui Xu\*, Xinyao Li, Runpei Dong, Liuyu Bian, Yu-Xiong Wang†, L
 - `static/videos/` – H.264 MP4 clips (30 fps, no audio, faststart). `hero/` holds the opening video in 1080p and 720p (720p is served below 900 px viewports or on slow connections); `scene/` holds the crowd render that is scrubbed by scroll behind the abstract.
 - `static/posters/` – one JPEG poster per clip; clips load their MP4 only when scrolled near.
 - `static/images/` – favicon and `social_preview.jpg` (1200×630 Open Graph image).
-- `static/pdfs/ULTRA.pdf` – paper.
+- Paper button links to the arXiv PDF (https://arxiv.org/pdf/2603.03279), always the latest version.
 
 ## Editing
 
