@@ -15,6 +15,15 @@ Xialin He\*, Sirui Xu\*, Xinyao Li, Runpei Dong, Liuyu Bian, Yu-Xiong Wang†, L
 - `static/posters/` – one JPEG poster per clip; clips load their MP4 only when scrolled near.
 - `static/images/` – favicon and `social_preview.jpg` (1200×630 Open Graph image).
 - Paper button links to the arXiv PDF (https://arxiv.org/pdf/2603.03279), always the latest version.
+- `playground/` – the interactive browser demo (Sirui Xu's "Humanoid Playground": MuJoCo WASM + the policy in ONNX Runtime Web + three.js). Served at `/playground/index.html?profile=release`. The page embeds it in `#playground` (between the abstract and the overview reel) as an iframe that is created only when the visitor clicks **Launch the demo**; until then the card shows `static/posters/playground.jpg` and the muted loop `static/videos/playground/playground_loop.mp4`. Nothing under `playground/` is fetched before that click (first load is ≈110 MB: 60 MB ONNX, 19 MB STL, 10 MB WASM, ~12 MB gzipped JSON, the rest small).
+
+## Interactive demo (`playground/`)
+
+- The demo's own code is never edited. The only additions are `playground/embed.css` and two lines in `playground/index.html` `<head>` (a script that adds `class="embed"` to `<html>` when the URL has `?embed=1`, and the `embed.css` link). Embed mode hides the demo's header, control strip, notes, status line and footer, restyles the badge, HUD and buttons with the page's tokens, and lets the canvas fill the iframe. `?embed=1` is ignored by the demo's own logic.
+- New release from Sirui: `tools/sync_playground.sh <unzipped dir with index.html>`. It rsyncs only the runtime files (drops `review.html`, tests, source maps, the unused ONNX Runtime / three.js builds and G1 meshes the scene does not reference: 417 MB → ~240 MB), re-applies the embed hook, and keeps `embed.css`. Then open `/playground/index.html?profile=release&embed=1` locally and check that the badge, HUD and Reset button still look right.
+- The page reads the demo's `#status` text (same origin) to show the loading steps and reveals the frame when that text starts with `Running` (`Ready` fires before the walking motions have loaded). `ERROR…` becomes an error card with an open-in-new-tab link; a missing `#mujoco_canvas` after load means nothing is deployed at `playground/`. Physics pauses via the demo's `window.__interactiveDemo.pause()/resume()` while the frame is scrolled fully out of view (not when the demo paused itself), and the iframe gives the keyboard back to the page. If those names change in a new release, only the reveal timing and these courtesies are affected.
+- Regenerate the teaser after a release that changes the scene: record the canvas in embed mode (`canvas.captureStream` + `MediaRecorder` in DevTools, or a screen recording), then encode with the page recipe to `static/videos/playground/playground_loop.mp4` (3:2, 1280×853, 30 fps) and take a mid-carry frame as `static/posters/playground.jpg` (1440×960).
+- Phones, tablets, coarse pointers and Data Saver get the same section with a link to open the demo in a new tab instead of the in-page iframe.
 
 ## Editing
 

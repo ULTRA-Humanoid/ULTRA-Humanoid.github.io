@@ -1,0 +1,610 @@
+{
+  "experiment": "bounded exact-source hand002_predecessor69 phase reproduction; not live entry",
+  "sourceIdentity": "sub7_largebox_002_081_081_076_080_080_080",
+  "sourcePhaseInclusive": [
+    69,
+    293
+  ],
+  "interactionSourceIntervalInclusive": [
+    150,
+    179
+  ],
+  "teacher": {
+    "path": "/lustre/fsw/portfolios/nvr/users/siruix/aresearch-humanoid-inf/outputs/teacher_amass_bones_4gpu_x2data_personal/teacher-amass/nn/teacher-amass.pth",
+    "epoch": 111369,
+    "checkpoint_bytes": 137676099,
+    "actor_parameter_count": 5739549,
+    "actor_fp32_parameter_bytes": 22958196
+  },
+  "unchangedRuntime": {
+    "scene": "web/public/g1_scene.xml",
+    "solverSubstepsPerControl": 17,
+    "observation": "TrainingTeacherObs",
+    "policyTraining": false,
+    "physicsChanged": false,
+    "stateTeleportSuccess": false
+  },
+  "executedControls": 225,
+  "exactReplaySubsteps": 3825,
+  "maximumEndpointReplayErrorM": 0.0,
+  "sourceRequestedDisplacementXYM": [
+    0.9432625770568848,
+    0.1377105712890625
+  ],
+  "actualDisplacementXYM": [
+    0.8606158533091226,
+    0.15406756881513334
+  ],
+  "actualNetDisplacementM": 0.8742976968559365,
+  "signedProgressAlongRequestedDirectionM": 0.8738452279408653,
+  "signedCrossTrackM": 0.028124770065732857,
+  "directionErrorDegrees": 1.84344107192987,
+  "actualIntendedContactSubsteps": 1636,
+  "actualIncidentalHumanContactSubsteps": 1758,
+  "actualKneeOrHipContactSubsteps": 76,
+  "bodyContacts": [
+    {
+      "body": "left_ankle_roll_link",
+      "substeps": 9,
+      "controls": 2,
+      "sourceControlRangesInclusive": [
+        [
+          157,
+          158
+        ]
+      ],
+      "peakNormalForceN": 97.0757032069838,
+      "integratedNormalImpulseNs": 0.521471788193504,
+      "minimumDistanceM": -0.0014573695657475467,
+      "declaredIntendedBody": false
+    },
+    {
+      "body": "left_knee_link",
+      "substeps": 58,
+      "controls": 5,
+      "sourceControlRangesInclusive": [
+        [
+          157,
+          159
+        ],
+        [
+          211,
+          212
+        ]
+      ],
+      "peakNormalForceN": 89.90037589520553,
+      "integratedNormalImpulseNs": 1.4477629933510023,
+      "minimumDistanceM": -0.007665365868730589,
+      "declaredIntendedBody": false
+    },
+    {
+      "body": "left_rubber_hand",
+      "substeps": 1539,
+      "controls": 97,
+      "sourceControlRangesInclusive": [
+        [
+          90,
+          117
+        ],
+        [
+          120,
+          141
+        ],
+        [
+          147,
+          153
+        ],
+        [
+          159,
+          185
+        ],
+        [
+          189,
+          201
+        ]
+      ],
+      "peakNormalForceN": 33.66905482209239,
+      "integratedNormalImpulseNs": 16.567234660530055,
+      "minimumDistanceM": -0.008771213958571633,
+      "declaredIntendedBody": true
+    },
+    {
+      "body": "left_wrist_pitch_link",
+      "substeps": 260,
+      "controls": 17,
+      "sourceControlRangesInclusive": [
+        [
+          147,
+          163
+        ]
+      ],
+      "peakNormalForceN": 61.62152764634193,
+      "integratedNormalImpulseNs": 5.101858025386416,
+      "minimumDistanceM": -0.004359287789032092,
+      "declaredIntendedBody": true
+    },
+    {
+      "body": "right_knee_link",
+      "substeps": 18,
+      "controls": 2,
+      "sourceControlRangesInclusive": [
+        [
+          149,
+          150
+        ]
+      ],
+      "peakNormalForceN": 23.66620124828102,
+      "integratedNormalImpulseNs": 0.2201493167919786,
+      "minimumDistanceM": -0.002031377808133052,
+      "declaredIntendedBody": false
+    },
+    {
+      "body": "right_rubber_hand",
+      "substeps": 1725,
+      "controls": 105,
+      "sourceControlRangesInclusive": [
+        [
+          90,
+          141
+        ],
+        [
+          147,
+          153
+        ],
+        [
+          157,
+          202
+        ]
+      ],
+      "peakNormalForceN": 45.46106092266907,
+      "integratedNormalImpulseNs": 28.681698814188472,
+      "minimumDistanceM": -0.014671398376222096,
+      "declaredIntendedBody": false
+    },
+    {
+      "body": "right_wrist_yaw_link",
+      "substeps": 33,
+      "controls": 2,
+      "sourceControlRangesInclusive": [
+        [
+          162,
+          163
+        ]
+      ],
+      "peakNormalForceN": 27.567735383711792,
+      "integratedNormalImpulseNs": 0.523949006809601,
+      "minimumDistanceM": -0.0026359470937793407,
+      "declaredIntendedBody": false
+    },
+    {
+      "body": "world",
+      "substeps": 6723,
+      "controls": 196,
+      "sourceControlRangesInclusive": [
+        [
+          70,
+          100
+        ],
+        [
+          104,
+          104
+        ],
+        [
+          106,
+          121
+        ],
+        [
+          130,
+          137
+        ],
+        [
+          144,
+          150
+        ],
+        [
+          153,
+          160
+        ],
+        [
+          169,
+          293
+        ]
+      ],
+      "peakNormalForceN": 121.53000397044698,
+      "integratedNormalImpulseNs": 27.91536266849486,
+      "minimumDistanceM": -0.0053059971437768305,
+      "declaredIntendedBody": false
+    }
+  ],
+  "nonTargetObjectContacts": [
+    {
+      "object": "active_plasticbox_080_080_080",
+      "body": "world",
+      "substeps": 10302,
+      "controls": 215,
+      "sourceControlRangesInclusive": [
+        [
+          79,
+          293
+        ]
+      ],
+      "peakNormalForceN": 52.12167071865221,
+      "integratedNormalImpulseNs": 15.060205487025222,
+      "minimumDistanceM": -0.00638661513379335
+    },
+    {
+      "object": "active_smallbox_080_080_080",
+      "body": "world",
+      "substeps": 10680,
+      "controls": 213,
+      "sourceControlRangesInclusive": [
+        [
+          81,
+          293
+        ]
+      ],
+      "peakNormalForceN": 9.509985142153374,
+      "integratedNormalImpulseNs": 2.051320756574888,
+      "minimumDistanceM": -0.0084137995844729
+    },
+    {
+      "object": "active_suitcase_080_080_080",
+      "body": "world",
+      "substeps": 7116,
+      "controls": 216,
+      "sourceControlRangesInclusive": [
+        [
+          78,
+          293
+        ]
+      ],
+      "peakNormalForceN": 62.31252338571905,
+      "integratedNormalImpulseNs": 8.379211165232444,
+      "minimumDistanceM": -0.006223427892539435
+    }
+  ],
+  "footSlip": {
+    "measurement": "planar ankle-body displacement during actual ankle-body/world contact substeps",
+    "byFootM": {
+      "left_ankle_roll_link": 0.110085999747186,
+      "right_ankle_roll_link": 0.08513922196642741
+    },
+    "combinedM": 0.19522522171361362,
+    "maximumGroundedFootSpeedMps": 1.0471660388114135,
+    "p95GroundedFootSpeedMps": 0.10820288928105591,
+    "groundedSubstepsAbove0p1Mps": 324,
+    "baseline34815072Comparable": false,
+    "baselineLimitation": "The preserved direct79 dense artifact did not retain human-ground contact ownership."
+  },
+  "contactInterpretation": {
+    "acceptedExtraContactPolicy": "extra hand/knee contact is diagnostic unless task fails or unwanted collision is the primary propulsive dependency",
+    "cleanContactQualification": false,
+    "handNormalImpulseNs": 50.874740506914584,
+    "kneeNormalImpulseNs": 1.6679123101429811,
+    "kneeContactControlRangeRelative": [
+      80,
+      143
+    ],
+    "objectPlanarDeltaAcrossKneeContactM": 0.45168474195691505,
+    "signedProgressBeforeKneeContactM": 0.42913190000607215,
+    "primaryUnwantedPropulsiveDependencyObserved": false
+  },
+  "minimumRootHeightM": 0.5970979614852545,
+  "minimumUpright": 0.6707282956624951,
+  "balanced": true,
+  "finalBoxSpeedMps": 4.644821152999262e-05,
+  "finalBoxAngularSpeedRadps": 0.0003390588314092498,
+  "final30ObjectXYDriftM": 2.3308540315280132e-05,
+  "stopped": true,
+  "taskOutcomeQualified": true,
+  "contactCleanlinessQualified": false,
+  "sourceReproductionQualified": true,
+  "liveEntryTested": false,
+  "liveEntryQualified": false,
+  "positiveTrainingLabelCreated": false,
+  "limitations": [
+    "Exact source-state initialization tests teacher reproduction, not an ordinary Web entry.",
+    "The selected reference retains unchanged original continuation rows as lookahead.",
+    "Task outcome, contact cleanliness, and live-entry qualification are reported independently.",
+    "Extra hand/knee contact is accepted unless the task fails or depends primarily on unwanted collision."
+  ],
+  "denseDiagnostics": {
+    "path": "dense-diagnostics.npz",
+    "actionsShape": [
+      225,
+      29
+    ],
+    "substepPoseRows": 3825,
+    "allModelBodyPosesRetained": true,
+    "contactForceRows": 10365,
+    "normalImpulseIsExactTimeIntegral": true
+  },
+  "naturalExit252To293": {
+    "sourceIntervalInclusive": [
+      252,
+      293
+    ],
+    "substeps": 714,
+    "objectNetM": 3.215580727555789e-05,
+    "objectPlanarPathM": 3.544647552189417e-05,
+    "maximumObjectSpeedMps": 7.075160829117522e-05,
+    "maximumObjectAngularSpeedRadps": 0.00045132695231586695,
+    "minimumRootHeightM": 0.7672630548477173,
+    "minimumUpright": 0.9373623728752136,
+    "humanBoxContactBodies": [],
+    "allTargetContactRowsIncludingWorld": 2142,
+    "finalHandCentreGapsM": {
+      "left_rubber_hand": 0.7479618787765503,
+      "right_rubber_hand": 0.7305617928504944
+    }
+  },
+  "measuredHistoryBoundaryAt79": {
+    "interpretation": "state after executing source69..78; exact before-control79 boundary; source reproduction only",
+    "initializedOnlyAtSourceFrame": 69,
+    "generatedPredecessorSourceIntervalInclusive": [
+      69,
+      78
+    ],
+    "boundarySourceIndex": 79,
+    "controlsGeneratingHistory": 10,
+    "stateMismatchAgainstExactSource79": {
+      "rootPositionM": 0.01104910914405752,
+      "rootOrientationDegrees": 3.8342238876078163,
+      "rootGeneralizedVelocityL2": 0.3863622194623145,
+      "jointPositionRmsRad": 0.047422859649035885,
+      "jointVelocityRmsRadps": 0.6116611366078004,
+      "objectPositionM": 0.003048287405623724,
+      "objectOrientationDegrees": 0.42310724888506135,
+      "objectGeneralizedVelocityL2": 0.007151000321182129,
+      "all39BodyPositionRmsM": 0.010014886199265192
+    },
+    "generatedHistoryAt79": {
+      "previousActionL2": 1.1206393730643847,
+      "previousTorqueL2Nm": 64.59700029403038,
+      "previousDofPositionRmsRad": 0.5813291453310885,
+      "previousDofVelocityRmsRadps": 1.2155523249516575,
+      "previousAction": [
+        -0.3914271593093872,
+        0.04353516548871994,
+        -0.009612120687961578,
+        0.4066504240036011,
+        -0.044840529561042786,
+        -0.0021877288818359375,
+        -0.17369312047958374,
+        -0.07294729351997375,
+        0.1528901904821396,
+        0.35103434324264526,
+        -0.1697520911693573,
+        0.01479959674179554,
+        0.10902370512485504,
+        -0.14388379454612732,
+        0.3098059594631195,
+        -0.3229387402534485,
+        0.40309733152389526,
+        -0.03394295275211334,
+        0.12557768821716309,
+        -0.013990335166454315,
+        0.02805260196328163,
+        0.01427767425775528,
+        -0.3089994490146637,
+        -0.397195965051651,
+        -0.17428584396839142,
+        0.15190985798835754,
+        0.01438005268573761,
+        -0.027286425232887268,
+        -0.031956057995557785
+      ],
+      "previousTorqueNm": [
+        18.213964462280273,
+        1.804028034210205,
+        -0.5073520541191101,
+        -4.196381092071533,
+        6.342226028442383,
+        3.3073947429656982,
+        47.195899963378906,
+        -16.456331253051758,
+        16.546083450317383,
+        -23.86760139465332,
+        -5.113960266113281,
+        0.9515796899795532,
+        6.906522274017334,
+        -8.109264373779297,
+        10.757097244262695,
+        -4.140346050262451,
+        8.607961654663086,
+        3.815228223800659,
+        -2.0869052410125732,
+        0.0687704011797905,
+        -0.5595182180404663,
+        0.3955649435520172,
+        -0.4044035077095032,
+        -7.362042427062988,
+        -1.5114306211471558,
+        -1.8513965606689453,
+        0.09505494683980942,
+        -0.3091616630554199,
+        0.048871979117393494
+      ],
+      "previousDofPosition": [
+        -1.4163516759872437,
+        0.11797472089529037,
+        -0.019156500697135925,
+        1.1165884733200073,
+        -0.3284147381782532,
+        -0.11050919443368912,
+        -1.478806972503662,
+        -0.053094495087862015,
+        0.01752711832523346,
+        1.1573433876037598,
+        -0.31036385893821716,
+        0.012705367058515549,
+        0.15962646901607513,
+        -0.07958904653787613,
+        0.5391051173210144,
+        -0.5123386383056641,
+        0.6522964239120483,
+        -0.36840513348579407,
+        0.5550039410591125,
+        -0.035850636661052704,
+        0.01768057607114315,
+        0.02074241265654564,
+        -0.640895426273346,
+        -0.6042203903198242,
+        -0.43128982186317444,
+        0.5879780054092407,
+        0.0010920321801677346,
+        -0.12359727919101715,
+        -0.0906347706913948
+      ],
+      "previousDofVelocity": [
+        -1.4173760414123535,
+        0.2605830132961273,
+        -0.22592021524906158,
+        0.12373457849025726,
+        -3.055161952972412,
+        -0.21961316466331482,
+        -2.7766833305358887,
+        0.35556185245513916,
+        0.04076777398586273,
+        1.7290534973144531,
+        -0.2653411328792572,
+        0.14702412486076355,
+        0.08741439133882523,
+        -0.37496867775917053,
+        0.12346872687339783,
+        -1.3215916156768799,
+        -1.351792812347412,
+        0.0013171053724363446,
+        0.025492873042821884,
+        -0.711872398853302,
+        1.1377534866333008,
+        0.07531601190567017,
+        -3.38015079498291,
+        0.11745953559875488,
+        -0.995932400226593,
+        -0.6974992752075195,
+        -0.6381986737251282,
+        -0.009595719166100025,
+        -1.2386691570281982
+      ]
+    },
+    "direct79BaselineHistory": {
+      "previousAction": "all zeros",
+      "previousTorque": "all zeros",
+      "previousDofContext": "initialized to current source79 DOF state by observation builder"
+    },
+    "targetContactBodiesAtBoundary": [
+      "world"
+    ],
+    "liveEntryTested": false,
+    "liveEntryQualified": false
+  },
+  "comparisonAgainstDirect79Job34815072": {
+    "baselineSourcePhaseInclusive": [
+      79,
+      293
+    ],
+    "baselineJob": 34815072,
+    "taskMetrics": {
+      "signedProgressAlongRequestedDirectionM": {
+        "predecessor69": 0.8738452279408653,
+        "direct79": 0.8391658164358596,
+        "difference": 0.03467941150500564
+      },
+      "directionErrorDegrees": {
+        "predecessor69": 1.84344107192987,
+        "direct79": 3.2657105837756877,
+        "difference": -1.4222695118458177
+      },
+      "minimumRootHeightM": {
+        "predecessor69": 0.5970979614852545,
+        "direct79": 0.6048112807036264,
+        "difference": -0.007713319218371928
+      },
+      "minimumUpright": {
+        "predecessor69": 0.6707282956624951,
+        "direct79": 0.669022902903042,
+        "difference": 0.0017053927594531393
+      },
+      "final30ObjectXYDriftM": {
+        "predecessor69": 2.3308540315280132e-05,
+        "direct79": 1.5665269040533148e-05,
+        "difference": 7.643271274746984e-06
+      }
+    },
+    "booleanOutcomes": {
+      "balanced": {
+        "predecessor69": true,
+        "direct79": true
+      },
+      "stopped": {
+        "predecessor69": true,
+        "direct79": true
+      },
+      "taskOutcomeQualified": {
+        "predecessor69": true,
+        "direct79": true
+      },
+      "contactCleanlinessQualified": {
+        "predecessor69": false,
+        "direct79": false
+      },
+      "sourceReproductionQualified": {
+        "predecessor69": true,
+        "direct79": true
+      }
+    },
+    "contactImpulseNs": {
+      "hands": {
+        "predecessor69": 50.874740506914584,
+        "direct79": 53.888844033851356
+      },
+      "knee": {
+        "predecessor69": 1.6679123101429811,
+        "direct79": 3.2820837614156795
+      }
+    },
+    "naturalExit252To293": {
+      "predecessor69": {
+        "sourceIntervalInclusive": [
+          252,
+          293
+        ],
+        "substeps": 714,
+        "objectNetM": 3.215580727555789e-05,
+        "objectPlanarPathM": 3.544647552189417e-05,
+        "maximumObjectSpeedMps": 7.075160829117522e-05,
+        "maximumObjectAngularSpeedRadps": 0.00045132695231586695,
+        "minimumRootHeightM": 0.7672630548477173,
+        "minimumUpright": 0.9373623728752136,
+        "humanBoxContactBodies": [],
+        "allTargetContactRowsIncludingWorld": 2142,
+        "finalHandCentreGapsM": {
+          "left_rubber_hand": 0.7479618787765503,
+          "right_rubber_hand": 0.7305617928504944
+        }
+      },
+      "direct79": {
+        "sourceIntervalInclusive": [
+          252,
+          293
+        ],
+        "substeps": 714,
+        "objectNetM": 2.1981939426041208e-05,
+        "objectPlanarPathM": 2.7939862775383517e-05,
+        "maximumObjectSpeedMps": 5.7207194913644344e-05,
+        "maximumObjectAngularSpeedRadps": 0.00046097635640762746,
+        "minimumRootHeightM": 0.7653650641441345,
+        "minimumUpright": 0.9371358156204224,
+        "humanBoxContactBodies": [],
+        "allTargetContactRowsIncludingWorld": 2142,
+        "finalHandCentreGapsM": {
+          "left_rubber_hand": 0.7544744610786438,
+          "right_rubber_hand": 0.6868346929550171
+        }
+      }
+    },
+    "liveEntryCompared": false,
+    "interpretation": "Both arms initialize exact source state; only predecessor69 generates ten policy controls before source79."
+  }
+}

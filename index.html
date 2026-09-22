@@ -164,6 +164,8 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>arXiv</a>
       <a class="btn btn-ghost" href="#worlds">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="m5 12 7 7 7-7"/></svg>Watch</a>
+      <a class="btn btn-ghost btn-live" href="#playground">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l7.07 17 2.51-7.39L21 11.07z"/><path d="m13 13 6 6"/></svg>Interactive demo</a>
     </div>
   </div>
 </header>
@@ -203,6 +205,47 @@
       <div class="wrap narrow glass">
         <h2 class="eyebrow light" id="abstract-h">Abstract</h2>
         <p class="abstract-text">Achieving autonomous and versatile whole-body loco-manipulation remains a central barrier to making humanoids practically useful. Yet existing approaches are fundamentally constrained: retargeted data are often scarce or low-quality; methods struggle to scale to large skill repertoires; and, most importantly, they rely on tracking predefined motion references rather than generating behavior from perception and high-level task specifications. To address these limitations, we propose ULTRA, a unified framework with two key components. First, we introduce a physics-driven neural retargeting algorithm that translates large-scale motion capture to humanoid embodiments while preserving physical plausibility for contact-rich interactions. Second, we learn a unified multimodal controller that supports both dense references and sparse task specifications, under sensing ranging from accurate motion-capture state to noisy egocentric visual inputs. We distill a universal tracking policy into this controller, compress motor skills into a compact latent space, and apply reinforcement learning finetuning to expand coverage and improve robustness under out-of-distribution scenarios. This enables coordinated whole-body behavior from sparse intent without test-time reference motions. We evaluate ULTRA in simulation and on a real Unitree G1 humanoid. Results show that ULTRA generalizes to autonomous, goal-conditioned whole-body loco-manipulation from egocentric perception, consistently outperforming tracking-only baselines with limited skills.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Interactive demo: MuJoCo + the policy in the browser (dark) ============ -->
+  <section class="playground" id="playground" aria-labelledby="playground-h">
+    <div class="wrap">
+      <p class="eyebrow light">Interactive demo</p>
+      <h2 id="playground-h" class="h-display">Set a goal. <em>The controller chooses the skill.</em></h2>
+      <p class="lede">Click the box or the suitcase, then a point on the floor. A skill arbiter picks push, carry or walk and reports its choice; the policy executes it in MuJoCo. Physics and inference run in this tab; nothing is sent to a server.</p>
+      <div class="tags on-ink"><span class="tag">Task spec &middot; click goals</span><span class="tag">Sensing &middot; simulated state</span><span class="tag">Runtime &middot; MuJoCo WASM + ONNX Runtime Web</span></div>
+
+      <div class="play" id="play" data-src="playground/index.html?profile=release&amp;embed=1">
+        <div class="play-frame" id="play-frame">
+          <video class="play-teaser" muted loop playsinline preload="none" poster="static/posters/playground.jpg" data-src="static/videos/playground/playground_loop.mp4" aria-hidden="true"></video>
+          <span class="chip chip-lab play-chip" id="play-chip" aria-hidden="true">Recording</span>
+          <div class="play-launch" id="play-launch">
+            <button class="btn btn-primary play-btn" id="play-btn" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l7.07 17 2.51-7.39L21 11.07z"/><path d="m13 13 6 6"/></svg>Launch the demo</button>
+            <a class="btn btn-ghost play-open" href="playground/index.html?profile=release" target="_blank" rel="noopener">Open the demo in a new tab
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg></a>
+            <p class="play-loading" role="status" aria-live="polite"><i></i><span id="play-loading-text">Starting&hellip;</span></p>
+            <p class="play-error" id="play-error" role="alert"></p>
+            <p class="play-note" id="play-note">&asymp;110 MB on first load &middot; needs a mouse and keyboard</p>
+          </div>
+        </div>
+        <div class="play-bar">
+          <ul class="play-keys" aria-label="Controls">
+            <li><kbd>Click</kbd> the object, then the floor</li>
+            <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk</li>
+            <li><kbd>Q</kbd><kbd>E</kbd> turn</li>
+            <li><kbd>R</kbd> reset</li>
+            <li><kbd>Drag</kbd> orbit the camera</li>
+          </ul>
+          <div class="play-tools">
+            <span class="play-status" id="play-status"></span>
+            <button class="btn btn-ghost btn-sm" id="play-full" type="button" hidden>Fullscreen</button>
+            <a class="btn btn-ghost btn-sm" href="playground/index.html?profile=release" target="_blank" rel="noopener">New tab
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg></a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -386,6 +429,7 @@
 <nav class="rail" id="rail" aria-label="Page sections">
   <a href="#worlds"><span>Real world</span></a>
   <a href="#abstract"><span>Abstract</span></a>
+  <a href="#playground"><span>Interactive demo</span></a>
   <a href="#overview"><span>Overview</span></a>
   <a href="#tracking"><span>Tracking</span></a>
   <a href="#goal-mocap"><span>Goal following</span></a>

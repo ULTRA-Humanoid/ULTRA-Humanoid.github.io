@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Humanoid Playground — Largebox &amp; Suitcase</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="review.css">
+  <script>if(new URLSearchParams(location.search).get("embed")==="1")document.documentElement.classList.add("embed");</script>
+  <link rel="stylesheet" href="embed.css">
+  <script src="vendor/ort/ort.min.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three/build/three.module.js",
+      "three/addons/": "./vendor/three/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <nav id="review-toolbar" class="review-toolbar" aria-label="Development review" hidden>
+    <a href="review.html">← Comparisons</a>
+    <span id="review-version-label"></span>
+    <button id="download-review-session" type="button" disabled>Download session</button>
+  </nav>
+  <p id="review-recording-note" class="review-recording-note" hidden>Recent commands and measured states stay in this browser. Download them if you find a problem.</p>
+  <header>
+    <h1>Humanoid Playground</h1>
+    <p class="subtitle">
+      Choose the Largebox or Suitcase, then choose where it should go.
+      The humanoid safely chooses how to interact.
+    </p>
+  </header>
+
+  <div class="controls" aria-label="Controls">
+    <div class="control-group secondary-control" hidden>
+      <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
+      <span class="control-label">move</span>
+    </div>
+    <div class="control-group secondary-control" hidden>
+      <span class="key">Q</span><span class="key">E</span>
+      <span class="control-label">turn</span>
+    </div>
+    <div class="control-group primary-flow" data-step="1">
+      <span class="key">click box</span>
+      <span class="control-label">pick object</span>
+    </div>
+    <div class="flow-arrow" aria-hidden="true">→</div>
+    <div class="control-group primary-flow" data-step="2">
+      <span class="key">click floor</span>
+      <span class="control-label">set target</span>
+    </div>
+    <div class="control-group secondary-control" id="deselect-controls" hidden>
+      <span class="key">Deselect</span>
+      <span class="control-label">clear selection</span>
+    </div>
+    <div class="control-group" id="style-controls">
+      <span class="key">Space</span>
+      <span class="control-label">resample style</span>
+    </div>
+    <div class="control-group" id="smoothing-controls">
+      <span class="key">1</span><span class="key">2</span><span class="key">3</span>
+      <span class="control-label">smoothness</span>
+    </div>
+    <div class="control-group secondary-control" hidden>
+      <span class="key">V</span>
+      <span class="control-label">follow cam</span>
+    </div>
+    <div class="control-group secondary-control" hidden>
+      <span class="key">R</span>
+      <span class="control-label">reset</span>
+    </div>
+    <div class="control-group secondary-control" hidden>
+      <span class="key">Esc</span>
+      <span class="control-label">cancel</span>
+    </div>
+  </div>
+
+  <p id="control-mode-note" class="control-mode-note" hidden></p>
+
+  <div class="box-task-controls" aria-label="Box task">
+    <button id="pickup-button" type="button" disabled>Pick up &amp; set down</button>
+    <button id="carry-button" type="button" disabled>Carry about 1 m</button>
+    <button id="long-carry-example-button" type="button" hidden disabled>Carry 2.3 m example</button>
+    <button id="short-carry-example-button" type="button" hidden disabled>Move 0.36 m</button>
+    <button id="medium-carry-example-button" type="button" hidden disabled>Move 1.4 m</button>
+    <button id="mixed-carry-example-button" type="button" hidden disabled>Move 3.3 m</button>
+    <button id="style-carry-example-button" type="button" hidden disabled>Move 1.15 m</button>
+    <button id="angled-carry-example-button" type="button" hidden disabled>Move 1.15 m at −15°</button>
+    <button id="angled-medium-carry-example-button" type="button" hidden disabled>Move 1.4 m at −15°</button>
+    <button id="entry-region-carry-example-button" type="button" hidden disabled>Move 1.4 m at +15°</button>
+    <button id="deselect-button" type="button" class="secondary" disabled>Change object</button>
+    <button id="reset-button" type="button" class="secondary" disabled>Reset</button>
+  </div>
+
+  <div class="stage">
+    <div id="mode-badge" class="mode-idle">STANDING</div>
+    <canvas id="mujoco_canvas" width="720" height="480"></canvas>
+    <div class="player-hud" aria-label="Interaction status">
+      <span id="task-status" role="status" aria-live="polite">Select the Largebox or Suitcase, then click a floor target.</span>
+      <span id="skill-decision-status" role="status" aria-live="polite">Chosen skill: none — waiting for a target.</span>
+    </div>
+    <pre id="info-panel" class="info-panel" aria-hidden="true" hidden>loading…</pre>
+  </div>
+
+  <div id="status" class="status">Loading…</div>
+
+  <footer class="release-footer">
+    <p>
+      <a href="https://github.com/Sirui-Xu/aresearch-humanoid" target="_blank" rel="noopener">Code on GitHub</a>
+      &nbsp;·&nbsp;
+      Built with <a href="https://github.com/zalo/mujoco_wasm" target="_blank" rel="noopener">mujoco-wasm</a>,
+      <a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a>,
+      and <a href="https://onnxruntime.ai/" target="_blank" rel="noopener">ONNX Runtime Web</a>.
+    </p>
+  </footer>
+
+  <script src="combined_settings.js"></script>
+  <script type="module" src="src/review_session.js"></script>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

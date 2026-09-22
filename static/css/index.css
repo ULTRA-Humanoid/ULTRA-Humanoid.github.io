@@ -138,7 +138,7 @@ html.stage-anim .stage-brand .brand-venue { color: var(--gold); text-shadow: 0 0
 .btn svg { width: 1.05em; height: 1.05em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .btn-primary { background: linear-gradient(135deg, #1f6b78, #2a8494); color: #fff; box-shadow: 0 6px 20px rgba(46, 138, 154, .38); }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(74, 191, 207, .48); }
-.btn-ghost { border-color: rgba(255, 255, 255, .35); color: var(--on-ink); }
+.btn-ghost { border-color: rgba(255, 255, 255, .35); color: var(--on-ink); background: transparent; } /* also resets the UA <button> face */
 .btn-ghost:hover { border-color: var(--teal-2); color: var(--teal-2); transform: translateY(-2px); }
 
 /* ---- animated stage (JS + desktop + motion OK) ---- */
@@ -256,7 +256,7 @@ html:not(.stage-anim) .stage-title { animation: rise .7s ease-out both; }
   position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(180deg, var(--ink) 0%, rgba(11, 17, 20, .2) 22%, rgba(11, 17, 20, .2) 72%, var(--ink) 100%);
 }
-.scene-content { position: relative; margin-top: -100vh; padding: 30vh 0 34vh; }
+.scene-content { position: relative; margin-top: -100vh; padding: 30vh 0 22vh; }
 .glass {
   padding: clamp(1.6rem, 3vw, 2.6rem);
   background: rgba(11, 17, 20, .58);
@@ -437,4 +437,86 @@ html:not(.stage-anim) .stage-title { animation: rise .7s ease-out both; }
   html.stage-anim .stage { height: auto; }
   html.stage-anim .stage-video, html.stage-anim .stage-title { position: static; transform: none !important; }
   .clip { box-shadow: none; }
+}
+
+/* --------------------------------------------------------------------------
+   Interactive demo (dark). The MuJoCo iframe is created only when the visitor
+   clicks Launch; until then the card is a poster + muted teaser loop.
+   -------------------------------------------------------------------------- */
+.playground {
+  position: relative; background: var(--ink); color: var(--on-ink); overflow: hidden;
+  padding: clamp(2rem, 5vh, 4rem) 0 calc(clamp(4rem, 9vh, 7rem) + 32px); /* +32px: the light sheet below overlaps by that much */
+}
+.playground::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(60% 55% at 50% 60%, rgba(46, 138, 154, .16), transparent 70%);
+}
+.playground .wrap { position: relative; }
+.playground .lede { margin-bottom: 1.1rem; }
+.tags.on-ink { margin-bottom: 2.2rem; }
+.tags.on-ink .tag { color: var(--on-ink-2); background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .14); }
+.btn-live svg { fill: currentColor; stroke-width: 1.6; }
+
+.play { width: min(100%, calc((100vh - 7rem) * 1.5)); margin-inline: auto; } /* the whole frame always fits the viewport height */
+.play-frame {
+  position: relative; aspect-ratio: 3 / 2; overflow: hidden; border-radius: var(--r-lg);
+  background: #0e1218; border: 1px solid rgba(255, 255, 255, .08); box-shadow: var(--shadow-card); transform: translateZ(0);
+}
+.play-frame iframe, .play-teaser { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+.play-teaser { object-fit: cover; background: #0e1218; transition: opacity .6s, visibility .6s; }
+.play-chip { position: absolute; top: 1rem; left: 1rem; z-index: 3; transition: opacity .3s, visibility .3s; }
+.play.is-live .play-chip { opacity: 0; visibility: hidden; }
+.play-launch {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .9rem;
+  text-align: center; padding: 1rem;
+  background: linear-gradient(180deg, rgba(11, 17, 20, .12), rgba(11, 17, 20, .5));
+  transition: opacity .6s, visibility .6s;
+}
+.play-launch .btn { font-size: 1.05rem; padding: .85em 1.6em; }
+.play-open, .play-loading, .play-error { display: none; }
+.play-error { margin: 0; max-width: 46ch; font-size: .95rem; color: var(--on-ink); }
+.play-error b { color: #ffb4a8; }
+.play.is-error .play-btn, .play.is-error .play-loading { display: none; }
+.play.is-error .play-error, .play.is-error .play-open { display: inline-flex; }
+.play.is-error .play-error { display: block; }
+.play.is-error .play-launch { background: linear-gradient(180deg, rgba(11, 17, 20, .55), rgba(11, 17, 20, .8)); }
+.play-tools [hidden] { display: none !important; }
+.play-loading { align-items: center; gap: .6rem; margin: 0; font-weight: 500; font-size: 1rem; color: var(--on-ink); }
+.play-loading i { width: 9px; height: 9px; border-radius: 50%; background: var(--teal-2); box-shadow: 0 0 12px var(--teal-2); animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: .35; transform: scale(.75); } 50% { opacity: 1; transform: none; } }
+.play-note { margin: 0; font-size: .86rem; color: var(--on-ink-2); text-shadow: 0 1px 8px rgba(0, 0, 0, .6); }
+
+.play.is-loading .play-btn { display: none; }
+.play.is-loading .play-loading { display: inline-flex; }
+.play.is-live .play-launch, .play.is-live .play-teaser { opacity: 0; visibility: hidden; pointer-events: none; }
+.play.is-link .play-btn, .play.is-link .play-keys, .play.is-link .play-tools, .play.is-link .play-loading { display: none; }
+.play.is-link .play-open { display: inline-flex; }
+
+.play-bar { display: flex; justify-content: space-between; align-items: center; gap: .8rem 1.2rem; flex-wrap: wrap; margin-top: 1rem; min-height: 2.2rem; }
+.play-keys { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .45rem 1.2rem; font-size: .84rem; color: var(--on-ink-2); }
+.play-keys li { display: inline-flex; align-items: center; gap: .35rem; }
+.play-keys kbd {
+  display: inline-block; min-width: 1.7em; padding: .12em .45em; border-radius: 6px; text-align: center;
+  border: 1px solid rgba(255, 255, 255, .18); border-bottom-width: 2px; background: rgba(255, 255, 255, .06);
+  font: 600 .76rem/1.5 var(--sans); color: var(--on-ink);
+}
+.play-keys kbd + kbd { margin-left: -.15rem; }
+.play-tools { display: flex; align-items: center; gap: .6rem; margin-left: auto; }
+.play-status { font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; font-size: .78rem; color: var(--on-ink-3); font-variant-numeric: tabular-nums; }
+.play-status:empty { display: none; }
+.btn-sm { font-size: .8rem; padding: .55em 1em; }
+.play-frame:fullscreen, .play-frame:-webkit-full-screen { border-radius: 0; border: 0; }
+.playground :focus-visible { outline-color: var(--teal-2); }
+
+@media (max-width: 900px) {
+  .play { width: 100%; min-width: 0; }
+  .play-launch .btn { font-size: .95rem; }
+}
+@media (max-width: 600px) {
+  .playground { padding-top: 1rem; }
+  .play-note { font-size: .8rem; }
+}
+@media print {
+  .playground { background: #fff !important; color: #000 !important; }
+  .play-launch, .play-bar { display: none !important; }
 }

@@ -186,6 +186,139 @@
     });
   }
 
+  /* ------------------------------------------------------------ playground */
+  /* The MuJoCo + ONNX demo lives in /playground/ (same origin). Nothing from it is
+     fetched until the visitor clicks Launch: the card is a poster + muted teaser loop.
+     Ready/loading text is mirrored from the demo's own #status line. */
+  function setupPlayground() {
+    var play = $('#play');
+    if (!play) return;
+    var frame = $('#play-frame', play), btn = $('#play-btn', play), teaser = $('.play-teaser', play);
+    var note = $('#play-note', play), loadText = $('#play-loading-text', play), errBox = $('#play-error', play);
+    var status = $('#play-status', play), full = $('#play-full', play), chip = $('#play-chip', play);
+    var conn = navigator.connection;
+    var saveData = !!(conn && conn.saveData);
+    var canRun = typeof WebAssembly === 'object' && (function () {
+      try { var c = d.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; }
+    })();
+    var linkOnly = w.matchMedia('(max-width: 900px), (pointer: coarse)').matches || saveData || !canRun;
+
+    /* teaser loop follows the same rules as the other clips: load near the viewport, pause out of it */
+    if (teaser && !saveData) {
+      if (supportsIO) {
+        new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (play.classList.contains('is-live')) return;
+            if (e.isIntersecting) { ensureSource(teaser); safePlay(teaser); } else { teaser.pause(); }
+          });
+        }, { rootMargin: '60% 0px' }).observe(teaser);
+      } else { ensureSource(teaser); safePlay(teaser); }
+    }
+
+    if (linkOnly || !btn) { /* phones, tablets, data saver, no WebGL/WASM: never build the iframe; the card links to the full page */
+      play.classList.add('is-link');
+      if (note) note.textContent = !canRun ? 'Needs WebGL and WebAssembly: ultra-humanoid.github.io/playground'
+        : 'The interactive demo needs a mouse and keyboard: ultra-humanoid.github.io/playground';
+      return;
+    }
+
+    var iframe = null, timer = 0, started = 0, live = false, failed = false, pausedByUs = false;
+    function demoDoc() { try { return iframe && iframe.contentDocument; } catch (e) { return null; } }
+    function demoApi() { try { return iframe && iframe.contentWindow && iframe.contentWindow.__interactiveDemo; } catch (e) { return null; } }
+    function readStatus() {
+      var doc = demoDoc(), el = doc && doc.getElementById('status');
+      return el ? el.textContent.trim().replace(/^\[[^\]]+\]\s*/, '') : '';
+    }
+    function visibleShare() {
+      var r = frame.getBoundingClientRect();
+      var vis = Math.min(r.bottom, w.innerHeight) - Math.max(r.top, 0);
+      return r.height > 0 ? Math.max(0, vis) / r.height : 0;
+    }
+    function fail(title, detail) {
+      failed = true;
+      clearTimeout(timer); timer = 0;
+      play.classList.remove('is-loading');
+      play.classList.add('is-error');
+      if (errBox) { errBox.textContent = ''; var b = d.createElement('b'); b.textContent = title; errBox.appendChild(b); if (detail) errBox.appendChild(d.createTextNode(' ' + detail)); }
+    }
+    function goLive() {
+      live = true;
+      play.classList.remove('is-loading');
+      play.classList.add('is-live');
+      if (teaser) teaser.pause();
+      if (full && (d.fullscreenEnabled || d.webkitFullscreenEnabled)) full.hidden = false;
+      /* hand the keyboard to the demo only if the visitor is still looking at it */
+      var ae = d.activeElement;
+      if (visibleShare() >= 0.5 && (!ae || ae === d.body || play.contains(ae))) { try { iframe.contentWindow.focus(); } catch (e) {} }
+    }
+    function poll() {
+      var t = readStatus(), waited = performance.now() - started;
+      if (!live) {
+        if (t && loadText) loadText.textContent = t;
+        if (status) status.textContent = t;
+        if (/^ERROR/.test(t)) { fail('The simulation could not start.', t.replace(/^ERROR[^:]*:\s*/, '').split('\n')[0]); return; }
+        if (!t && waited > 25000 && loadText) loadText.textContent = 'Still downloading — the first visit fetches about 110 MB.';
+        /* "Ready" arrives before the walking motions load and before the first frame; "Running at" is the steady state */
+        if (/^Running/.test(t) || waited > 180000) goLive();
+      } else if (status) {
+        status.textContent = /^ERROR/.test(t) ? t : ''; /* after launch the frame speaks for itself; only surface errors */
+      }
+      timer = setTimeout(poll, live ? 1000 : 250);
+    }
+    btn.addEventListener('click', function () {
+      if (iframe) return;
+      iframe = d.createElement('iframe');
+      iframe.src = play.dataset.src;
+      iframe.title = 'ULTRA interactive demo: MuJoCo simulation of the humanoid';
+      iframe.setAttribute('allow', 'fullscreen');
+      iframe.setAttribute('allowfullscreen', '');
+      frame.insertBefore(iframe, frame.firstChild); /* under the teaser; the teaser fades once the demo reports Running */
+      iframe.addEventListener('load', function () {
+        var doc = demoDoc();
+        if (doc && !doc.getElementById('mujoco_canvas')) { fail('Nothing is deployed at playground/ yet.'); return; }
+        /* Same origin: a plain wheel over the canvas would be eaten by the demo's OrbitControls zoom and trap the page
+           scroll. Stop it before it reaches the canvas so the wheel scrolls the page; Ctrl/Cmd + wheel still zooms. */
+        if (doc) doc.addEventListener('wheel', function (e) { if (!e.ctrlKey && !e.metaKey) e.stopPropagation(); }, { capture: true, passive: true });
+      });
+      started = performance.now();
+      play.classList.add('is-loading');
+      if (chip) chip.textContent = 'Loading';
+      if (loadText) loadText.textContent = 'Starting…';
+      poll();
+    });
+
+    if (full) full.addEventListener('click', function () {
+      if (d.fullscreenElement || d.webkitFullscreenElement) { (d.exitFullscreen || d.webkitExitFullscreen).call(d); return; }
+      var req = frame.requestFullscreen || frame.webkitRequestFullscreen;
+      if (req) req.call(frame);
+    });
+    ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+      d.addEventListener(ev, function () { if (full) full.textContent = (d.fullscreenElement || d.webkitFullscreenElement) ? 'Exit fullscreen' : 'Fullscreen'; });
+    });
+
+    /* Out of view: physics pauses (rendering keeps running, so no blank frame) and the keyboard goes back to the page
+       so Space / arrows are not swallowed by the demo while the visitor reads on. Back in view: resume. Errors are never resumed over. */
+    function demoOwnsPause() { /* fallen robot ("Reset needed") or a step error: the demo paused itself, leave it alone */
+      var doc = demoDoc(), badge = doc && doc.getElementById('mode-badge');
+      return /^ERROR/.test(readStatus()) || !!(badge && /reset needed/i.test(badge.textContent));
+    }
+    function setAway(away) {
+      if (!iframe || !live) return;
+      var api = demoApi();
+      if (away) {
+        if (api && !pausedByUs && !demoOwnsPause()) { pausedByUs = true; try { api.pause(); } catch (e) {} }
+        if (d.activeElement === iframe) { try { iframe.blur(); w.focus(); } catch (e) {} }
+      } else if (api && pausedByUs) {
+        pausedByUs = false;
+        if (!demoOwnsPause()) { try { api.resume(); } catch (e) {} }
+      }
+    }
+    if (supportsIO) new IntersectionObserver(function (entries) { entries.forEach(function (e) { setAway(!e.isIntersecting); }); }, { threshold: 0 }).observe(frame);
+    d.addEventListener('visibilitychange', function () { /* rAF already idles the sim in hidden tabs; stop polling too */
+      if (d.hidden) { clearTimeout(timer); timer = 0; } else if (iframe && !timer && !failed) poll();
+    });
+  }
+
   /* ---------------------------------------------------------------- stage */
   function setupStage() {
     var stage = $('#stage');
@@ -324,6 +457,7 @@
     setupStrips();
     setupChrome();
     setupBibtex();
+    setupPlayground();
     setupStage();
   }
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', init); else init();

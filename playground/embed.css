@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* embed.css — styling for the ULTRA project page embed (index.html#playground).
+   Inert unless <html class="embed">, which index.html sets when the URL has ?embed=1.
+   Only CSS: the demo's HTML and JS are untouched. Re-apply with tools/sync_playground.sh. */
+
+html.embed {
+  --bg-0: #0b1114;
+  --bg-1: #111a1e;
+  --bg-2: #18242a;
+  --line: rgba(255, 255, 255, .08);
+  --line-soft: rgba(255, 255, 255, .06);
+  --text: #f2f6f7;
+  --muted: #8797a0;
+  --accent: #4abfcf;
+  --accent-soft: rgba(74, 191, 207, .18);
+  --radius: 0px;
+  --radius-sm: 14px;
+  --shadow-lg: none;
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+
+html.embed, html.embed body { height: 100%; min-height: 0; margin: 0; overflow: hidden; background: #0e1218; }
+html.embed body { position: relative; display: block; }
+
+/* Chrome off: the project page supplies the title, instructions, status and credits. */
+html.embed header,
+html.embed .controls,
+html.embed #control-mode-note,
+html.embed #status,
+html.embed footer,
+html.embed .info-panel,
+html.embed #review-toolbar,
+html.embed #review-recording-note { display: none !important; }
+
+/* The canvas fills the iframe; the parent frame owns radius, border and shadow. */
+html.embed .stage {
+  position: absolute; inset: 0; display: block;
+  padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none;
+}
+html.embed canvas {
+  width: 100% !important; height: 100% !important;
+  max-width: none; max-height: none; aspect-ratio: auto; border-radius: 0;
+}
+
+/* Mode badge -> the page's .chip */
+html.embed #mode-badge {
+  top: 1rem; left: 1rem; padding: .4em .85em; border: 0; box-shadow: none;
+  font: 700 .68rem/1.4 var(--sans); letter-spacing: .09em;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+html.embed .mode-idle { background: rgba(11, 17, 20, .72); color: #fff; }
+html.embed .mode-loco { background: rgba(46, 138, 154, .85); color: #fff; }
+
+/* HUD -> the page's .glass */
+html.embed .player-hud {
+  bottom: 1rem; width: min(88%, 40rem); padding: .65rem 1rem;
+  border-radius: var(--radius-sm); border: 1px solid var(--line);
+  background: rgba(11, 17, 20, .72); box-shadow: none;
+  backdrop-filter: blur(10px) saturate(1.2); -webkit-backdrop-filter: blur(10px) saturate(1.2);
+}
+html.embed #task-status { font: 500 .92rem/1.45 var(--sans); color: var(--text); }
+html.embed #skill-decision-status {
+  font: 500 .72rem/1.5 var(--mono); color: var(--accent); opacity: .9;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* "Change object" / "Reset" -> ghost pills over the canvas, top right */
+html.embed .box-task-controls {
+  position: absolute; top: 1rem; right: 1rem; z-index: 6;
+  margin: 0; padding: 0; max-width: none; gap: .45rem; justify-content: flex-end;
+}
+html.embed .box-task-controls button {
+  border-radius: 999px; padding: .55em 1.05em; font: 600 .78rem/1 var(--sans);
+  color: var(--text); background: rgba(11, 17, 20, .6); border: 1px solid rgba(255, 255, 255, .3);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  transition: border-color .2s, color .2s;
+}
+html.embed .box-task-controls button.secondary { background: rgba(11, 17, 20, .6); color: var(--text); border-color: rgba(255, 255, 255, .3); }
+html.embed .box-task-controls button:hover { border-color: var(--accent); color: var(--accent); }
+html.embed .box-task-controls button:disabled { opacity: .35; }
+html.embed .box-task-controls button[hidden] { display: none; }
+
+html.embed :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Box-task states share the page's legend green; recover keeps the demo's red. */
+html.embed .mode-box-task, html.embed .mode-box-carry, html.embed .mode-turn, html.embed .mode-hoi-full { background: rgba(92, 184, 143, .88); color: #06130d; }
