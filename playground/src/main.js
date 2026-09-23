@@ -1319,8 +1319,10 @@ async function main() {
   const capitalize = text => text ? text[0].toUpperCase() + text.slice(1) : text;
   /** 'large box' / 'suitcase' for the object a running or just-finished task handles. */
   function carriedObjectLabel() {
-    return objectDisplayName(skillController?.skill?.objectBodyName ?? activeCarryController?.skill?.objectBodyName
-      ?? boxExitController?.objectBodyName ?? user.activeObjName);
+    // The carry controller (or the exit controller) knows the object; the generic
+    // skillController may be a walk/turn record whose objectBodyName is the largebox.
+    return objectDisplayName(activeCarryController?.skill?.objectBodyName ?? boxExitController?.objectBodyName
+      ?? user.activeObjName ?? skillController?.skill?.objectBodyName);
   }
   function finishingTaskMessage() {
     return boxExitController?.isBusy() ? `Stepping clear of the ${carriedObjectLabel()} before following the new command.`
