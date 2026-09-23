@@ -217,7 +217,7 @@
       <p class="lede">Click the box or the suitcase, then a point on the floor; a ring marks how far it can be carried. A skill arbiter picks push, carry or walk and reports its choice; the policy executes it in MuJoCo. Physics and inference run in this tab; nothing is sent to a server.</p>
       <div class="tags on-ink"><span class="tag">Task spec &middot; click goals</span><span class="tag">Sensing &middot; simulated state</span><span class="tag">Runtime &middot; MuJoCo WASM + ONNX Runtime Web</span></div>
 
-      <div class="play" id="play" data-src="playground/index.html?profile=release&amp;embed=1&amp;review=off&amp;taskCoverageCapture=0&amp;maxPixelRatio=1.5&amp;realtime=1&amp;maxPickups=1">
+      <div class="play" id="play" data-src="playground/index.html?profile=release&amp;embed=1&amp;review=off&amp;taskCoverageCapture=0&amp;maxPixelRatio=1.5&amp;realtime=1&amp;maxPickups=1&amp;recordedLateral=1">
         <div class="play-frame" id="play-frame">
           <video class="play-teaser" muted loop playsinline preload="none" poster="static/posters/playground.jpg" data-src="static/videos/playground/playground_loop.mp4" aria-hidden="true"></video>
           <span class="chip chip-lab play-chip" id="play-chip" aria-hidden="true">Recording</span>
@@ -234,7 +234,8 @@
         <div class="play-bar">
           <ul class="play-keys" aria-label="Controls">
             <li><kbd>Click</kbd> the object, then the floor</li>
-            <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk</li>
+            <li><kbd>W</kbd><kbd>S</kbd> walk</li>
+            <li><kbd>A</kbd><kbd>D</kbd> side-step</li>
             <li><kbd>Q</kbd><kbd>E</kbd> turn</li>
             <li><kbd>R</kbd> reset</li>
             <li><kbd>Drag</kbd> orbit the camera</li>
