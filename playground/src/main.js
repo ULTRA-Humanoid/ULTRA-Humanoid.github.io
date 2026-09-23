@@ -55,7 +55,7 @@ import { CARRY_CONTROL_BUDGET_CONTROLS, remainingCarryControls } from './carry_t
 import { readCarryStylePreview, selectCarryStyleCandidates } from './carry_style_preview.js';
 import { readCarryStyleSampling, CarryStyleRequestSampler, planCarryStyleChoices } from './carry_style_request_sampling.js';
 import { withStudentLiftProfile, hasPreparedStudentLiftProfile, STUDENT_LIFT_PROFILE } from './student_lift_profile.js';
-import { planMixedCarry } from './mixed_carry_planner.js';
+import { planMixedCarry, mixedCarryDistanceCoverage } from './mixed_carry_planner.js';
 import { planCarryGoalRegion } from './carry_goal_region_planner.js';
 import { planCarryWithPickupPoseSearch } from './pickup_pose_plan_search.js';
 import { MixedCarryGoalSequenceController } from './mixed_carry_sequence.js';
@@ -236,12 +236,13 @@ function makeSkyGradientTexture() {
   return tex;
 }
 
-function setupThreeJs(canvas, { cameraMode = 'wide' } = {}) {
+function setupThreeJs(canvas, { cameraMode = 'wide', maxPixelRatio = 2 } = {}) {
   const renderer = new THREE.WebGLRenderer({
     canvas, antialias: true, alpha: false,
     powerPreference: 'high-performance',
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  // `maxPixelRatio` (URL, default 2 = v16) lets an embedding page trade backbuffer pixels for frame time.
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -491,9 +492,31 @@ function dominantPlanRefusalReason(plan) {
   for (const [reason, count] of counts) if (count > best) { best = count; dominant = reason; }
   return dominant;
 }
-function carryPlanRefusalStatus(plan) {
-  if (plan.reason === 'unsupported_distance')
-    return 'This destination needs a shorter move. Try a closer point along that direction.';
+const OBJECT_DISPLAY_NAMES = Object.freeze({ largebox: 'large box', suitcase: 'suitcase', plasticbox: 'plastic crate', smallbox: 'small box' });
+/** 'active_suitcase_080_080_080' -> 'suitcase' (user-facing). Unknown bodies read as 'box'. */
+function objectDisplayName(bodyName) {
+  const match = /^active_([a-z]+)_/.exec(String(bodyName ?? ''));
+  return (match && OBJECT_DISPLAY_NAMES[match[1]]) || 'box';
+}
+/** "1.8–2.3 m, 3.6–4.6 m or 5.4–6.9 m" from planner distance intervals. */
+function describeReachIntervals(intervals) {
+  const parts = intervals.map(([lo, hi]) => `${lo.toFixed(1)}–${hi.toFixed(1)} m`);
+  return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} or ${parts.at(-1)}` : parts[0] ?? '';
+}
+/** Why a distance was refused: too close, too far, or in a gap between the
+ * supported carries. v16 said "needs a shorter move" for every case, which sent
+ * suitcase users (single 2.0 m clip, nothing shorter) the wrong way. */
+function unsupportedDistanceStatus(plan, label) {
+  const intervals = (plan.supportedDistanceIntervalsM ?? []).filter(i => Array.isArray(i) && i.length === 2 && i.every(Number.isFinite));
+  const distance = plan.distanceM;
+  if (!intervals.length || !Number.isFinite(distance)) return `That distance is not supported for the ${label}. Try a different destination.`;
+  const shortest = intervals[0][0], longest = intervals.at(-1)[1];
+  if (distance < shortest) return `Too close: the ${label} carry needs at least ${shortest.toFixed(1)} m. Click farther away in the same direction.`;
+  if (distance > longest) return `Too far: the ${label} can be carried at most ${longest.toFixed(1)} m in one request. Click closer in the same direction.`;
+  return `That distance falls between the supported ${label} carries (${describeReachIntervals(intervals)}). Click a little closer or farther.`;
+}
+function carryPlanRefusalStatus(plan, objectLabel = 'box') {
+  if (plan.reason === 'unsupported_distance') return unsupportedDistanceStatus(plan, objectLabel);
   const dominant = plan.reason === 'occupied_carry_destination' ? plan.reason : dominantPlanRefusalReason(plan);
   if (dominant === 'occupied_carry_destination')
     return 'That destination is occupied by another box. Choose a clearer spot.';
@@ -533,7 +556,9 @@ async function main() {
   if (presentationEnabled) document.body?.classList?.add('release-presentation');
 
   setStatus('Initializing renderer…');
-  const { renderer, scene, camera, controls } = setupThreeJs(canvas, { cameraMode });
+  const maxPixelRatioParam = Number.parseFloat(urlParams.get('maxPixelRatio') ?? '');
+  const maxPixelRatio = Number.isFinite(maxPixelRatioParam) && maxPixelRatioParam >= 1 ? Math.min(maxPixelRatioParam, 2) : 2;
+  const { renderer, scene, camera, controls } = setupThreeJs(canvas, { cameraMode, maxPixelRatio });
 
   setStatus('Loading physics engine and scene…');
   const { mujoco, model, data } = await loadMujocoScene(SCENE_URL, setStatus);
@@ -897,6 +922,15 @@ async function main() {
     && urlParams.get('restrictedCarryLibrary') !== '0';
   const restrictedCarryGoalRegionEnabled = restrictedCarryLibraryEnabled
     && urlParams.get('restrictedCarryGoalRegion') !== '0';
+  // maxPickups=1|2|3 (default 3 = v16): the most pickups a carry request may plan.
+  // The site embeds with 1. Probe of 12 largebox floor clicks (2026-09-23, same
+  // runtime): with 3, the 7 multi-pickup plans v16 chose completed 3 times, fell
+  // twice and stalled twice (7/12 clicks completed overall); with 1, 10/12
+  // completed and none stalled, 5 clicks being moved onto single-pickup coverage
+  // (longest delivered carry 2.57 m). The reach ring and destination snapping
+  // use the same coverage, so a click still turns into one supported carry.
+  const maxCarryPickupsParam = Number.parseInt(urlParams.get('maxPickups') ?? '', 10);
+  const maxCarryPickups = [1, 2, 3].includes(maxCarryPickupsParam) ? maxCarryPickupsParam : 3;
   // WS-B planner honesty (2026-09-15). Each behaviour has its own URL parameter:
   // replanRemaining=1 (default on): after a refused live distance, replan the
   //   remaining goal from the live box toward the ORIGINAL destination.
@@ -1079,7 +1113,18 @@ async function main() {
     }
     queuedBoxTask = null;
   }
-  const loadedSkills = new Map();
+  // Promise cache keyed exactly as v16 (kind, 'carry_long', library ids, step/turn ids). `resolved`
+  // mirrors the settled values so the reach guide and destination snapping can read
+  // them synchronously; a rejected or deleted entry never leaves a stale value behind.
+  const loadedSkills = new (class extends Map {
+    resolved = new Map();
+    set(key, promise) {
+      super.set(key, promise);
+      Promise.resolve(promise).then(skill => { if (this.get(key) === promise) this.resolved.set(key, skill); }, () => {});
+      return this;
+    }
+    delete(key) { this.resolved.delete(key); return super.delete(key); }
+  })();
   let activeBoxTask = null;
   // Shared normal-terminal retirement. Called once the completed controller has
   // already published its terminal receipt and any required box exit has finished.
@@ -1223,11 +1268,41 @@ async function main() {
   let pendingPushAdmission = null;   // R1b (v14a): a push-routed click's lane admission; steps wait for it like the retarget barrier
   const skillDecisions = [];
   function setTaskStatus(message) { if (taskStatus) taskStatus.textContent = taskStatusSkillLabel ? `[${taskStatusSkillLabel}] ${message}` : message; }
+  // Plain-language HUD copy for the arbiter's decision. The raw reason string
+  // stays in the element's title (and, unchanged, in every record/getState).
+  const PUSH_BLOCKER_TEXT = Object.freeze({
+    no_push_capability: 'no push clip for this object', task_active: 'a task is still running',
+    below_push_range: 'closer than the 0.95 m push clip', above_push_range: 'farther than the 0.95 m push clip',
+    above_delivered_reach: 'beyond the push clip\'s measured reach', goal_not_on_floor: 'destination is not on the floor',
+    object_yaw_missing: 'object heading unknown', off_face: 'box face is not square to the push direction',
+    off_cone: 'robot is not behind the object', entry_state_unvalidated: null, approach_unknown: 'approach not evaluated',
+    approach_blocked: 'approach line is blocked', live_entry_unavailable: 'robot is not standing still yet',
+    approach_too_far: 'approach is too long', robot_pose_missing: 'robot pose unknown',
+    distance_below_pickup_tolerance: null, unsupported_object: 'this object has no carry or push skill', invalid_input: 'invalid destination',
+  });
+  function describeSkillDecision(decision) {
+    const label = String(decision.skill ?? '').toUpperCase(), reason = String(decision.reason ?? '');
+    if (decision.skill === 'refuse') return `No skill: ${decision.message ?? reason.replace(/_/g, ' ')}`;
+    if (reason.startsWith('push_blocked:')) {
+      const parts = reason.slice('push_blocked:'.length).split(',')
+        .map(code => PUSH_BLOCKER_TEXT[code] === undefined ? code.replace(/_/g, ' ') : PUSH_BLOCKER_TEXT[code]).filter(Boolean);
+      return `Chosen skill: ${label} — push ruled out (${parts.join('; ')})`;
+    }
+    if (reason.startsWith('push_preconditions_satisfied')) return `Chosen skill: ${label} — straight ahead, within the 0.95 m push clip`;
+    if (reason.startsWith('goal_within_placement_tolerance')) return `Chosen skill: ${label} — the destination is where the object already stands`;
+    return `Chosen skill: ${label} — ${reason.replace(/_/g, ' ')}`;
+  }
+  let destinationAdjustmentNote = null;   // set by snapCarryDestination for the current click; shown after the decision
+  let lastGoalSource = null;              // 'click' (picker) or 'api' (__interactiveDemo) for the destination being routed
   function showSkillDecision(decision = null, note = null) {
     if (!skillDecisionStatus) return;
+    if (!decision) destinationAdjustmentNote = null;
+    // The adjustment note leads: a one-line HUD truncates the tail, and the moved
+    // destination is what the user must learn first.
     skillDecisionStatus.textContent = decision
-      ? `Chosen skill: ${decision.skill.toUpperCase()} — ${decision.reason}`
+      ? (destinationAdjustmentNote ? `${destinationAdjustmentNote} · ` : '') + describeSkillDecision(decision)
       : `Chosen skill: none — ${note ?? 'select an object and click a floor target.'}`;
+    skillDecisionStatus.title = decision ? `${decision.skill}: ${decision.reason}` : '';
   }
   function cancelPendingBoxTask(reason = 'user_command') {
     if (!skillLoading) return;
@@ -1241,8 +1316,14 @@ async function main() {
     || pendingSegmentCarryController !== null || pendingRecoveryParent !== null
     || Boolean(boxExitController?.isBusy())
     || ['approach', 'teacher', 'teacher_turn', 'teacher_step', 'teacher_settling', 'settling', 'settling_quiet'].includes(skillController?.phase); }
+  const capitalize = text => text ? text[0].toUpperCase() + text.slice(1) : text;
+  /** 'large box' / 'suitcase' for the object a running or just-finished task handles. */
+  function carriedObjectLabel() {
+    return objectDisplayName(skillController?.skill?.objectBodyName ?? activeCarryController?.skill?.objectBodyName
+      ?? boxExitController?.objectBodyName ?? user.activeObjName);
+  }
   function finishingTaskMessage() {
-    return boxExitController?.isBusy() ? 'Stepping clear of the box before following the new command.'
+    return boxExitController?.isBusy() ? `Stepping clear of the ${carriedObjectLabel()} before following the new command.`
       : skillController?.phase === 'teacher_step' ? 'Finishing this step, then cancelling the box task.'
       : pendingCarryController || skillController?.phase === 'teacher_turn' ? 'Finishing the turn, then cancelling the box task.'
       : 'Finishing the setdown. Movement resumes when the box is down.';
@@ -1651,6 +1732,11 @@ async function main() {
     },
     objectGoalFromGround,
     onFloorGoal: goal => { if (restrictedMode) submitRestrictedFloorGoal(goal); },
+    getReachGuide: () => {
+      if (user.activeObjName === null || activeObjBodyId < 0) return null;
+      const intervals = carryReachIntervals(user.activeObjName);
+      return intervals ? { center: [data.xpos[activeObjBodyId * 3], data.xpos[activeObjBodyId * 3 + 1]], intervals } : null;
+    },
     getTaskGoal: () => taskDestinationWorld,
     getTaskGoalRefused: () => {
       // Read request outcomes only to color the user's marker. This has no
@@ -1661,10 +1747,11 @@ async function main() {
         && (request.disposition === 'refused' || (request.disposition === 'outcome'
           && !['finished', 'cancelled'].includes(request.reason))));
     },
-    onObjectGoal: goal => {
+    onObjectGoal: (goal, { source = 'api', hitBody = null } = {}) => {
       // The selected floor destination goes to the carry planner. Keep the
       // student in standing/locomotion while optional task assets load.
       user.objGoalWorld = null;
+      lastGoalSource = source;
       // Retarget binds to the live controller's selected object, including a
       // Plastic-box carry started by the existing multi-object sequence.  The
       // ordinary new-task path below intentionally remains Large-box only.
@@ -1678,6 +1765,16 @@ async function main() {
           ? `Carry destination updated without releasing ${outcome.selectedObject}.`
           : `Carry destination unchanged: ${outcome.reason}`));
         return;
+      }
+      // A person's click on bare floor that no carry can serve is moved onto the
+      // nearest supported distance (e.g. the suitcase's single 2.0 m clip); the HUD
+      // says so after the decision. Automation requests (__interactiveDemo), clicks
+      // that land on an object body, and clicks while a task is running, loading or
+      // queued keep the v16 route unchanged (those are measured from a moving object).
+      destinationAdjustmentNote = null;
+      if (source === 'click' && hitBody === null && !skillActive() && !skillLoading && queuedBoxTask === null && pendingNormalGroundPush === null) {
+        const adjusted = snapCarryDestination(goal);
+        if (adjusted.note) { destinationAdjustmentNote = adjusted.note; goal = adjusted.goal; }
       }
       // B9 (skillArbiter=1): one interface. The deterministic skill arbiter (skill_arbiter.js) picks the
       // existing lane for this click (push / carry / pickup) or the existing refusal text.
@@ -2113,7 +2210,7 @@ async function main() {
       // Preserve the DOF and body histories from the actual approach. This
       // bounded hold uses the original terminal; it never reanchors the goal.
       user.humanGoalWorld = user.objGoalWorld = null; user.releaseKeys();
-      setTaskStatus('Settling closer to the box before lifting…');
+      setTaskStatus(`Settling closer to the ${carriedObjectLabel()} before lifting…`);
       return recovery.step(skillProprio());
     }
 
@@ -2294,7 +2391,7 @@ async function main() {
       ...(objectClassRoutingEnabled ? { yawSymmetry: objectRouter.yawSymmetry(rawSkill.objectBodyName) } : {}),
       carryDescentSagHold: carryDescentSagHoldEnabled,
       ...objectRouter.carryOutcomeOverrides(rawSkill.objectBodyName),   // OFF: {} (v5 key set); ON+suitcase: {outcomeRequirements} incl. tilt
-      maxSegments: rawSkill === longCarrySkill ? 1 : 3,
+      maxSegments: rawSkill === longCarrySkill ? 1 : maxCarryPickups,
       initialStanceFrames: useMatchedCarry || rawSkill === longCarrySkill ? 90 : carryInitialStanceFrames,
       requireSegmentExit: boxExitEnabled,
       quietSettling: quietEndingsEnabled ? { window: quietEndingConfig.window,
@@ -2337,7 +2434,7 @@ async function main() {
       const controlBudget = carryRequestControlBudget(activeBoxTaskRequestId);
       record.remainingControls = controlBudget?.remainingControls ?? null;
       if (!controlBudget) return refuse('request_clock_unavailable');
-      const pickupsUsed = carryTaskPickupCount(carry), maxSegments = 3 - pickupsUsed;
+      const pickupsUsed = carryTaskPickupCount(carry), maxSegments = maxCarryPickups - pickupsUsed;
       record.pickupsUsed = pickupsUsed; record.maxSegments = maxSegments;
       if (maxSegments < 1) return refuse('pickup_budget_exhausted');
       const library = buildCarryLibrary(carryLibraryContext, request.remainingDistanceM);
@@ -2405,7 +2502,7 @@ async function main() {
         remainingControls: controlBudget.remainingControls, estimatedControls: record.estimatedControls,
         plannedCandidateIds: record.plannedCandidateIds, pickupsUsed, budgetRisk: plan.budgetRisk === true });
       record.started = true;
-      setTaskStatus(`Box set down ${Math.round(request.remainingDistanceM * 100)} cm short. Continuing the carry to your destination…`);
+      setTaskStatus(`${capitalize(carriedObjectLabel())} set down ${Math.round(request.remainingDistanceM * 100)} cm short. Continuing the carry to your destination…`);
       return record;
     } catch (error) {
       console.warn('[replan remaining goal]', error);
@@ -2413,9 +2510,121 @@ async function main() {
     }
   }
 
+  /** The reference files a box task of `kind` for `carryProfile` needs, with the
+   * exact v16 cache keys and URLs (primary, optional long carry, carry library,
+   * turn and step records). Used by startBoxTask, the startup prefetch and the
+   * reach guide, so all three agree on what "loaded" means. */
+  function carryReferencePlan(carryProfile, kind, { hasGoal = true, useMatchedCarry = false } = {}) {
+    const primarySkillKey = useMatchedCarry ? 'matched_carry_prefix' : objectRouter.skillCacheKey(carryProfile, kind);
+    const longCarryUrl = objectRouter.referenceUrl(carryProfile, 'carry_long');   // OFF: 'public/teacher_carry_long_reference.json'
+    const primaryReferenceUrl = useMatchedCarry ? longCarryUrl : objectRouter.referenceUrl(carryProfile, kind);   // OFF: task.referenceUrl
+    const longCarryKey = !useMatchedCarry && hasGoal && kind === 'carry' && restrictedLongCarryEnabled && longCarryUrl ? 'carry_long' : null;
+    const libraryKeys = longCarryKey && restrictedCarryLibraryEnabled
+      ? objectRouter.libraryKeys(carryProfile, ['short_0184', 'short_0295', 'medium_1224', ...(alternateCarryEnabled ? ['alternate'] : []), ...(longClipLibraryEnabled ? LONG_CLIP_KEYS : []), ...(midClipLibraryEnabled ? MID_CLIP_KEYS : [])]) : [];
+    const turnKeys = hasGoal ? TURN_REFERENCES : [];
+    const stepKeys = hasGoal ? (teacherApproachEnabled ? STEP_REFERENCES
+      : teacherStandingMode === 'neutral' ? [STEP_REFERENCES[0]] : []) : [];
+    const entries = [{ key: primarySkillKey, url: primaryReferenceUrl },
+      ...(longCarryKey ? [{ key: longCarryKey, url: longCarryUrl }] : []),
+      ...libraryKeys.map(key => ({ key, url: objectRouter.referenceUrl(carryProfile, key) })),   // OFF: `public/teacher_carry_${key}_reference.json`
+      ...[...turnKeys, ...stepKeys].map(key => ({ key, url: `public/teacher_${key}_reference.json` }))];
+    return { primarySkillKey, primaryReferenceUrl, longCarryUrl, longCarryKey, libraryKeys, turnKeys, stepKeys, entries };
+  }
+  function ensureSkillLoaded(key, url) {
+    if (!loadedSkills.has(key)) loadedSkills.set(key,
+      Promise.resolve().then(() => loadTeacherSkill(url)).catch(error => { loadedSkills.delete(key); throw error; }));
+    return loadedSkills.get(key);
+  }
+  /** Distances (m from the object) the carry planner can serve for `bodyName`,
+   * from the same library / single-reference rules startBoxTask applies, or
+   * null until the references are loaded. Cached per loaded-set. */
+  let reachIntervalsCache = null;
+  function carryReachIntervals(bodyName) {
+    if (!bodyName) return null;
+    let profile;
+    try { profile = objectRouter.profileFor(bodyName); } catch { return null; }
+    if (objectRouter.taskRefusal(bodyName, 'carry')) return null;
+    const references = carryReferencePlan(profile, 'carry', { hasGoal: true });
+    const primary = loadedSkills.resolved.get(references.primarySkillKey);
+    if (!primary) return null;
+    const stamp = `${bodyName}|${loadedSkills.resolved.size}`;
+    if (reachIntervalsCache?.stamp === stamp) return reachIntervalsCache.intervals;
+    let intervals = null;
+    try {
+      if (references.longCarryKey) {
+        const longCarrySkill = loadedSkills.resolved.get(references.longCarryKey);
+        const librarySkills = references.libraryKeys.map(key => loadedSkills.resolved.get(key));
+        if (restrictedCarryLibraryEnabled && longCarrySkill && librarySkills.length && librarySkills.every(Boolean)) {
+          // requestedDistanceM null: no distance-dependent exclusion (carryRanking=excludeLong), so the
+          // coverage is the union of what a request at any distance can plan.
+          const library = buildCarryLibrary({ defaultSkill: primary, longCarrySkill, librarySkills, libraryKeys: references.libraryKeys }, null);
+          intervals = mixedCarryDistanceCoverage(library, { maxSegments: maxCarryPickups }).supportedDistanceIntervalsM;
+        }
+      } else {
+        // Single-reference object (suitcase): the same planCarrySegments defaults startBoxTask falls back to.
+        intervals = planCarrySegments([0, 0, 0], [10, 0, 0], primary, { maxSegments: maxCarryPickups }).supportedDistanceIntervalsM;
+      }
+    } catch (error) { console.warn('[reach guide]', error); intervals = null; }
+    reachIntervalsCache = { stamp, intervals: intervals ? Object.freeze(intervals.map(([lo, hi]) => Object.freeze([lo, hi]))) : null };
+    return reachIntervalsCache.intervals;
+  }
+  /** Move a floor click that no carry can serve onto the nearest supported
+   * distance along the same bearing (1 cm inside the band). Clicks inside a band,
+   * on the object (pickup / already placed) or before the references are loaded
+   * are returned unchanged. This changes only the requested destination, never
+   * a planner rule or tolerance; the request log records the moved goal. */
+  function snapCarryDestination(goal) {
+    const unchanged = { goal, note: null };
+    const bodyName = user.activeObjName;
+    if (!bodyName || activeObjBodyId < 0 || !goal || goal.length !== 3) return unchanged;
+    const intervals = carryReachIntervals(bodyName);
+    if (!intervals?.length) return unchanged;
+    const ox = data.xpos[activeObjBodyId * 3], oy = data.xpos[activeObjBodyId * 3 + 1];
+    const dx = goal[0] - ox, dy = goal[1] - oy, distance = Math.hypot(dx, dy);
+    if (!(distance > CARRY_PLACEMENT_TOLERANCE_M + 1e-12)) return unchanged;
+    if (intervals.some(([lo, hi]) => distance >= lo - 1e-9 && distance <= hi + 1e-9)) return unchanged;
+    let target = null, gap = Infinity;
+    for (const [lo, hi] of intervals) {
+      const inset = Math.min(0.01, (hi - lo) / 2);
+      for (const [edge, inside] of [[lo, lo + inset], [hi, hi - inset]]) {
+        const g = Math.abs(distance - edge);
+        if (g < gap) { gap = g; target = inside; }
+      }
+    }
+    if (target === null || !(target > CARRY_PLACEMENT_TOLERANCE_M)) return unchanged;
+    const scale = target / distance;
+    const label = objectDisplayName(bodyName);
+    return { goal: [ox + dx * scale, oy + dy * scale, goal[2]],
+      note: `Destination moved to ${target.toFixed(2)} m along your click: ${distance.toFixed(2)} m is ${distance < target ? 'too close for' : 'beyond'} the ${label} carry (${describeReachIntervals(intervals)})` };
+  }
+  /** Load every carry reference the release objects can need right after
+   * startup, one file at a time, so the first click does not download and
+   * parse ~40 MB of JSON. Same cache and keys as startBoxTask; failures only log. */
+  function warmCarryReferences() {
+    const jobs = [];
+    for (const bodyName of interactiveSelectableNames) {
+      let profile;
+      try { profile = objectRouter.profileFor(bodyName); } catch { continue; }
+      if (objectRouter.taskRefusal(bodyName, 'carry')) continue;
+      for (const entry of carryReferencePlan(profile, 'carry', { hasGoal: true }).entries)
+        if (entry.url && !jobs.some(job => job.key === entry.key)) jobs.push(entry);
+    }
+    void (async () => {
+      const started = performance.now();
+      for (const { key, url } of jobs) {
+        try { await ensureSkillLoaded(key, url); }
+        catch (error) { console.warn('[prefetch]', key, error.message); }
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      console.log(`[prefetch] ${jobs.length} carry references ready in ${((performance.now() - started) / 1000).toFixed(1)} s`);
+    })();
+  }
   async function startBoxTask(kind, requestedGoal = null, queuedRequestId = null) {
     const task = BOX_TASKS[kind];
     if (!task) throw new Error('Unknown box task');
+    // Only a person's click (routed synchronously from onObjectGoal) gets the painted frame below.
+    const interactiveRequest = queuedRequestId === null && lastGoalSource === 'click';
+    lastGoalSource = null;
     const requestId = queuedRequestId ?? beginBoxTaskRequest(kind, requestedGoal);
     const styleRequestToken = carryStyleRequestSampler?.reserve({ episodeVersion, requestId, kind,
       originalGoalWorld: requestedGoal }) ?? null;
@@ -2475,33 +2684,25 @@ async function main() {
     setTaskStatus('Loading the box task…');
     try {
       loadTeacherActor();
-      const primarySkillKey = useMatchedCarry ? 'matched_carry_prefix' : objectRouter.skillCacheKey(carryProfile, kind);
-      const longCarryUrl = objectRouter.referenceUrl(carryProfile, 'carry_long');   // OFF: 'public/teacher_carry_long_reference.json'
-      const primaryReferenceUrl = useMatchedCarry ? longCarryUrl : objectRouter.referenceUrl(carryProfile, kind);   // OFF: task.referenceUrl
-      if (!loadedSkills.has(primarySkillKey)) loadedSkills.set(primarySkillKey,
-        Promise.resolve().then(() => loadTeacherSkill(primaryReferenceUrl))
-          .catch(error => { loadedSkills.delete(primarySkillKey); throw error; }));
-      const longCarryKey = !useMatchedCarry && requestedGoal && kind === 'carry' && restrictedLongCarryEnabled && longCarryUrl ? 'carry_long' : null;
-      if (longCarryKey && !loadedSkills.has(longCarryKey)) loadedSkills.set(longCarryKey,
-        Promise.resolve().then(() => loadTeacherSkill(longCarryUrl))
-          .catch(error => { loadedSkills.delete(longCarryKey); throw error; }));
-      const libraryKeys = longCarryKey && restrictedCarryLibraryEnabled
-        ? objectRouter.libraryKeys(carryProfile, ['short_0184', 'short_0295', 'medium_1224', ...(alternateCarryEnabled ? ['alternate'] : []), ...(longClipLibraryEnabled ? LONG_CLIP_KEYS : []), ...(midClipLibraryEnabled ? MID_CLIP_KEYS : [])]) : [];
-      for (const key of libraryKeys) if (!loadedSkills.has(key)) loadedSkills.set(key,
-        Promise.resolve().then(() => loadTeacherSkill(objectRouter.referenceUrl(carryProfile, key)))   // OFF: `public/teacher_carry_${key}_reference.json`
-          .catch(error => { loadedSkills.delete(key); throw error; }));
-      const turnKeys = requestedGoal ? TURN_REFERENCES : [];
-      const stepKeys = requestedGoal ? (teacherApproachEnabled ? STEP_REFERENCES
-        : teacherStandingMode === 'neutral' ? [STEP_REFERENCES[0]] : []) : [];
-      for (const key of [...turnKeys, ...stepKeys]) if (!loadedSkills.has(key)) loadedSkills.set(key,
-        Promise.resolve().then(() => loadTeacherSkill(`public/teacher_${key}_reference.json`))
-          .catch(error => { loadedSkills.delete(key); throw error; }));
+      // Same keys/URLs as v16 (see carryReferencePlan); the startup prefetch fills the same cache.
+      const references = carryReferencePlan(carryProfile, kind, { hasGoal: Boolean(requestedGoal), useMatchedCarry });
+      const { primarySkillKey, longCarryKey, libraryKeys, turnKeys, stepKeys } = references;
+      for (const { key, url } of references.entries) ensureSkillLoaded(key, url);
       const [, defaultSkill, longCarrySkill, librarySkills, ...loadedLocomotionSkills] = await Promise.all([skillLoadPromise, loadedSkills.get(primarySkillKey),
         longCarryKey ? loadedSkills.get(longCarryKey) : null,
         Promise.all(libraryKeys.map(key => loadedSkills.get(key))),
         ...turnKeys.map(key => loadedSkills.get(key)), ...stepKeys.map(key => loadedSkills.get(key))]);
       let rawSkill = defaultSkill, mixedPlan = null, carryStyleSamplingSelection = null;
       const loadedTurnSkills = loadedLocomotionSkills.slice(0, turnKeys.length);
+      if (requestedGoal && interactiveRequest && !paused) {
+        // The geometric planner below is synchronous and can block for 0.1–10 s on a
+        // far click. Let the browser paint the marker and this line first; the
+        // loop may run one more standing control in between (the version guards
+        // below still apply). Automation requests and a paused loop never wait.
+        setTaskStatus('Planning the carry…');
+        await new Promise(resolve => { let done = false; const finish = () => { if (!done) { done = true; resolve(); } };
+          requestAnimationFrame(finish); setTimeout(finish, 60); });
+      }
       if (activeStepPromise) await activeStepPromise;
       if (version !== episodeVersion || requestVersion !== skillRequestVersion || restrictedSuspended) {
         carryStyleRequestSampler?.discard(requestId, version !== episodeVersion ? 'episode_reset'
@@ -2556,7 +2757,7 @@ async function main() {
               library: regionLibrary, extendedLibrary, tiers: pickupSearch ? pickupPoseSearchTiers : ['none'],
               makeCheckPlan: require => makeCarryPlanChecker(pickupSearch ? { ...pickupSearch, require } : null),
               planOnce: ({ library, checkPlan }) => planCarryDestination({ requestId, stage: 'request', originalGoalWorld: requestedGoal,
-                initialObjectPositionWorld: regionInitial, goalWorld: conditioningGoal, library, checkPlan, maxSegments: 3 }) });
+                initialObjectPositionWorld: regionInitial, goalWorld: conditioningGoal, library, checkPlan, maxSegments: maxCarryPickups }) });
             const { chosen, tierResults } = searched, planning = chosen.planned, checkPlan = chosen.checkPlan;
             mixedPlan = searched.plan;
             lastCarryLibrary = { requestId, library: regionLibrary, checkPlan };
@@ -2615,7 +2816,7 @@ async function main() {
             pickupPoseSearch: pickupPoseSearchReviews.at(-1)?.requestId === requestId ? structuredClone(pickupPoseSearchReviews.at(-1)) : null };
           if (selected.supported) rawSkill = selected.skill;
         }
-        const plan = selected?.plan ?? planCarrySegments(Array.from(data.xpos.slice(id * 3, id * 3 + 3)), conditioningGoal, rawSkill);
+        const plan = selected?.plan ?? planCarrySegments(Array.from(data.xpos.slice(id * 3, id * 3 + 3)), conditioningGoal, rawSkill, { maxSegments: maxCarryPickups });
         if (!plan.supported) {
           const intervals = selected?.supportedDistanceIntervalsM ?? plan.supportedDistanceIntervalsM;
           const refusalReason = truthfulRefusalReason(plan);
@@ -2628,7 +2829,7 @@ async function main() {
             dominantReason: plan.dominantReason ?? null, dominantObstacle: plan.dominantObstacle ?? null,
             checkedPlans: plan.checkedPlans ?? null,
           });
-          setTaskStatus(carryPlanRefusalStatus(plan));
+          setTaskStatus(carryPlanRefusalStatus(plan, objectDisplayName(carryProfile.bodyName)));
           return false;
         }
         if (carryReferenceClearance) {
@@ -2705,7 +2906,7 @@ async function main() {
           sourceFrames:activeCarryController.skill.sourceFrames};
         updateMatchedCarryMarker();
       }
-      setTaskStatus('Walking to the large box…');
+      setTaskStatus(`Walking to the ${objectDisplayName(skillController.skill?.objectBodyName)}…`);
       boxTaskRequestLog.transition(requestId, 'started', 'approach_started', boxRequestClock());
       taskCoverageCapture?.capture({stage:'execution_start', requestId, task:kind,
         originalGoalWorld:requestedGoal, clock:boxRequestClock()});
@@ -2935,7 +3136,7 @@ async function main() {
     picker.syncFromUserState();
     taskStatusSkillLabel = null;
     showSkillDecision(null, 'selection cleared.');
-    setTaskStatus('Selection cleared. Click the large box to select it again.');
+    setTaskStatus('Selection cleared. Click the large box or the suitcase to select it.');
   });
   pickupButton?.addEventListener('click', startPickup);
   carryButton?.addEventListener('click', startCarry);
@@ -2958,6 +3159,14 @@ async function main() {
   // re-enter itself.
   let activeStepPromise = null;
   let paused = urlParams.get('paused') === '1';
+  // realtime=1: the browser loop advances one 1/60 s control per 1/60 s of wall
+  // time instead of one per animation frame, so the robot moves at the same
+  // speed on a 120 Hz display as on a 60 Hz one (v16 ran 1.5-2x fast there and
+  // its speed followed the frame rate). At most one control per frame either
+  // way; a slow machine still runs slower than real time, exactly as before.
+  const realtimePacing = urlParams.get('realtime') === '1';
+  const controlPeriodMs = 1000 / CONTROL_HZ;
+  let stepDebtMs = 0, lastLoopMs = null;
   let frameCount = 0;
   let lastFpsT = performance.now();
 
@@ -3453,7 +3662,7 @@ async function main() {
         translator.reset(); translator.setClickPositionSource('stable_receding');
         user.humanGoalWorld = user.objGoalWorld = null; user.releaseKeys();
         boxApproachPlanner?.reset(); lastApproachRoute = null;
-        setTaskStatus('Retrying the approach to the box…');
+        setTaskStatus(`Retrying the approach to the ${carriedObjectLabel()}…`);
         skillStep = carry.step(skillProprio());
       } else {
         skillController = null;
@@ -3508,7 +3717,7 @@ async function main() {
       translator.reset();
       user.humanGoalWorld = user.objGoalWorld = null;
       user.releaseKeys();
-      setTaskStatus('Moving to another side of the box for this carry…');
+      setTaskStatus(`Moving to another side of the ${carriedObjectLabel()} for this carry…`);
     }
     if (skillStep?.stepFinished || skillStep?.turnFinished) {
       translator.reset(); translator.setClickPositionSource('matched');
@@ -3520,8 +3729,8 @@ async function main() {
       user.humanGoalWorld = user.objGoalWorld = null;
       user.releaseKeys();
       setTaskStatus(skillStep.completedSegments < skillStep.segmentCount
-        ? `Box set down. Preparing carry ${skillStep.completedSegments + 1} of ${skillStep.segmentCount}…`
-        : 'Box set down. Returning to standing…');
+        ? `${capitalize(carriedObjectLabel())} set down. Preparing carry ${skillStep.completedSegments + 1} of ${skillStep.segmentCount}…`
+        : `${capitalize(carriedObjectLabel())} set down. Returning to standing…`);
     }
     if (stagedStudentApproach?.active) {
       const transition = stagedStudentApproach.observeParent(skillStep, firstPickupStudentContext());
@@ -3647,11 +3856,11 @@ async function main() {
         }
       }
       if (previousSkillPhase !== 'approach') setTaskStatus(skillStep.segmentCount
-        ? `Walking to the box for carry ${skillStep.segmentIndex + 1} of ${skillStep.segmentCount}…`
+        ? `Walking to the ${carriedObjectLabel()} for carry ${skillStep.segmentIndex + 1} of ${skillStep.segmentCount}…`
         : 'Walking to the box…');
       if (pickupFacingApproachEnabled && previousSkillPhase !== 'approach') {
         if (skillController instanceof PickupFacingApproachController)
-          setTaskStatus('Walking around the box to face the pickup…');
+          setTaskStatus(`Walking around the ${carriedObjectLabel()} to face the pickup…`);
         else if (pickupFacingPlans.at(-1)?.requestId === activeBoxTaskRequestId
             && pickupFacingPlans.at(-1)?.supported === false)
           setTaskStatus('Using the ordinary approach for this destination…');
@@ -3735,15 +3944,15 @@ async function main() {
       setTaskStatus(skillStep.facingTurnRefused
           ? 'Could not turn to face the box from here. Choose another destination or approach the box from a different side.'
         : skillStep.completionReason === 'cancelled' ? 'Box task cancelled.'
-        : skillStep.completionReason === 'placement_missed' ? `Box set down. ${Math.round(remaining * 100)} cm remain; stepping clear before another request.`
+        : skillStep.completionReason === 'placement_missed' ? `${capitalize(carriedObjectLabel())} set down. ${Math.round(remaining * 100)} cm remain; stepping clear before another request.`
         : skillStep.completionReason === 'finished' ? 'Box placed. Stepping clear…'
         : skillStep.completionReason === 'lost_balance' ? 'The robot lost balance. Reset the scene to try again.'
         : skillStep.completionReason === 'failed_lift' ? 'The box was not lifted. Move closer and try again.'
         : skillStep.completionReason === 'failed_setdown' ? 'The box did not settle on the floor. Reset the scene to try again.'
         : skillStep.completionReason === 'needs_facing' ? 'Approach the box from the other side, then try again.'
         : skillStep.completionReason === 'unsupported_live_distance' ? (skillStep.replanRefusal?.reason === 'not_enough_time_left'
-          ? 'Box set down. Not enough time left to finish the carry to your destination.'
-          : 'Box set down. Choose a new destination to continue.')
+          ? `${capitalize(carriedObjectLabel())} set down. Not enough time left to finish the carry to your destination.`
+          : `${capitalize(carriedObjectLabel())} set down. Choose a new destination to continue.`)
         : skillStep.completionReason === 'occupied_carry_destination' ? 'There is not enough room for the box at that destination. Choose a clearer spot.'
         : skillStep.completionReason === 'carry_reference_clearance' ? 'The carry would pass too close to another box. Choose a different direction.'
         : skillStep.completionReason === 'reference_sweep_clearance' ? 'The approach needs more clearance. Choose another box destination or walking direction.'
@@ -3763,14 +3972,15 @@ async function main() {
         }
         const correction = placementDistanceM !== null && skillStep.completionReason === 'finished'
           && !finalCarryPlacement?.goalReached ? maybeQueuePlacementCorrection({ measuredObject, placementDistanceM }) : null;
+        const placedLabel = carriedObjectLabel();
         setTaskStatus(correction?.queued
-          ? `Box set down ${Math.round(placementDistanceM * 100)} cm from your destination. Correcting the placement…`
+          ? `${placedLabel[0].toUpperCase()}${placedLabel.slice(1)} set down ${Math.round(placementDistanceM * 100)} cm from your destination. Correcting the placement…`
           : queuedBoxTask || queuedRestrictedIntent()
-          ? 'Clear of the box. Resuming the queued command.'
-          : finalCarryPlacement?.goalReached ? `Complete. The box is ${placementDistanceM < .01
+          ? `Clear of the ${placedLabel}. Resuming the queued command.`
+          : finalCarryPlacement?.goalReached ? `Complete. The ${placedLabel} is ${placementDistanceM < .01
             ? 'less than 1' : Math.round(placementDistanceM * 100)} cm from your destination.`
-          : placementDistanceM !== null ? `Clear of the box. ${Math.round(placementDistanceM * 100)} cm remain. Choose a destination to continue.`
-          : 'Clear of the box. Choose your next movement.');
+          : placementDistanceM !== null ? `Clear of the ${placedLabel}. ${Math.round(placementDistanceM * 100)} cm remain. Choose a destination to continue.`
+          : `Clear of the ${placedLabel}. Choose your next movement.`);
         // Post-exit point: the terminal receipt was published at task completion and the
         // box exit has finished. Retire ownership unless a placement correction re-owns it.
         if (!correction?.queued) {
@@ -3832,7 +4042,7 @@ async function main() {
       skillStep = { ...skillStep, mode: 'teacher', justEnteredTeacher: false,
         referenceFrames: recordedApproachHold.referenceFrames };
       user.humanGoalWorld = user.objGoalWorld = null;
-      setTaskStatus('Settling at the box before lifting…');
+      setTaskStatus(`Settling at the ${carriedObjectLabel()} before lifting…`);
     }
     if (teacherStandingPlan && (user.wasdActive || user.humanGoalWorld !== null || user.objGoalWorld !== null)) {
       teacherStandingPlan = null; translator.reset();
@@ -4016,7 +4226,7 @@ async function main() {
         if (attempt.supported) {
           stagedStudentTransport = attempt.controller; studentTransports.push(stagedStudentTransport);
           if (studentTransports.length > 32) studentTransports.shift();
-          setTaskStatus('Carrying the box toward your destination…');
+          setTaskStatus(`Carrying the ${carriedObjectLabel()} toward your destination…`);
         }
       }
       if (transportDivergenceLimits && windowActive) {
@@ -4026,7 +4236,7 @@ async function main() {
           { parent: skillController, episode: episodeVersion, physicalControl: episodeControlStep });
         if (!check.active) {
           transportTeacherResumePending = true;
-          setTaskStatus('Preparing to complete the carry and set the box down…');
+          setTaskStatus(`Preparing to complete the carry and set the ${carriedObjectLabel()} down…`);
         }
       }
       if (transportTeacherResumePending && stagedStudentTransport?.isOwnedBy({ parent: skillController, episode: episodeVersion })) {
@@ -4105,12 +4315,12 @@ async function main() {
       user.releaseKeys();
       setTaskStatus(useRecoveryCycle ? skillController.statusMessage : useBoxExit ? (pendingSegmentCarryController
         ? `Carry ${pendingSegmentCarryController.segmentIndex + 1} of ${pendingSegmentCarryController.plan.goals.length} placed. Stepping clear before continuing to your destination…`
-        : skillStep.phase === 'teacher_exit_release' ? 'Box set down. Releasing the hands before stepping clear…'
-        : skillStep.phase === 'teacher_exit_hold' ? 'Box set down. Preparing to step clear…'
-        : skillStep.phase === 'teacher_exit_retreat' ? 'Stepping clear of the box…' : 'Settling after stepping clear…')
+        : skillStep.phase === 'teacher_exit_release' ? `${capitalize(carriedObjectLabel())} set down. Releasing the hands before stepping clear…`
+        : skillStep.phase === 'teacher_exit_hold' ? `${capitalize(carriedObjectLabel())} set down. Preparing to step clear…`
+        : skillStep.phase === 'teacher_exit_retreat' ? `Stepping clear of the ${carriedObjectLabel()}…` : 'Settling after stepping clear…')
         : skillStep.phase === 'teacher_settling' ? 'Settling before the next movement…'
-        : skillStep.phase === 'teacher_step' ? 'Stepping around the box…'
-        : skillStep.phase === 'teacher_turn' ? 'Turning to face the box…' : skillStep.segmentCount > 1
+        : skillStep.phase === 'teacher_step' ? `Stepping around the ${carriedObjectLabel()}…`
+        : skillStep.phase === 'teacher_turn' ? `Turning to face the ${carriedObjectLabel()}…` : skillStep.segmentCount > 1
         ? `Carrying the box: ${skillStep.segmentIndex + 1} of ${skillStep.segmentCount}…`
         : skillController === activeCarryController ? 'Carrying the box toward your destination…'
         : BOX_TASKS[activeBoxTask].executionMessage);
@@ -4512,7 +4722,7 @@ async function main() {
           record: { command: Array.from(obs.slice(0, 13)), rawAction: Array.from(mu),
             rootPositionWorld: Array.from(rootPosWorld), preview: lastControlPreview } });
         transportTeacherResumePending = true;
-        setTaskStatus('Preparing to complete the carry and set the box down…');
+        setTaskStatus(`Preparing to complete the carry and set the ${carriedObjectLabel()} down…`);
         return;
       }
     }
@@ -5427,13 +5637,21 @@ async function main() {
     // through the keyboard, so highlight/cache stay coherent.
     picker.syncFromUserState();
 
-    if (paused || activeStepPromise || activeLoadedRetargetPromise || pendingPushAdmission) return;
+    if (paused || activeStepPromise || activeLoadedRetargetPromise || pendingPushAdmission) { lastLoopMs = null; return; }
+    if (realtimePacing) {
+      const now = performance.now();
+      stepDebtMs = Math.min(2 * controlPeriodMs, stepDebtMs + (lastLoopMs === null ? controlPeriodMs : now - lastLoopMs));
+      lastLoopMs = now;
+      if (stepDebtMs < controlPeriodMs - 1e-6) return;
+      stepDebtMs -= controlPeriodMs;
+    }
     runStep().catch((e) => {
       paused = true;
       console.error('[loop] step error', e);
       setStatus(`ERROR in step(): ${e.message}`);
     });
   }
+  if (restrictedMode) warmCarryReferences();
   loop();
 }
 

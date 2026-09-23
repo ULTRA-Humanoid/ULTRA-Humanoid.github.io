@@ -1,9 +1,31 @@
 // Collision geometry for complete recorded motions. No physics is changed.
 // Source polygons need an additional caller-chosen reserve for actual tracking.
-const finite = (values, count) => values?.length === count && Array.from(values).every(Number.isFinite);
+const finite = (values, count) => {
+  if (values?.length !== count) return false;
+  for (let i = 0; i < count; i++) if (!Number.isFinite(values[i])) return false;
+  return true;
+};
 const yaw = q => Math.atan2(2 * (q[0] * q[1] + q[3] * q[2]), 1 - 2 * (q[1] ** 2 + q[2] ** 2));
 const close = (a, b, tolerance = 1e-5) => Math.abs(a - b) <= tolerance;
+// The (pure) validity verdict is remembered only for FROZEN polygon arrays:
+// bindMotionSweep freezes the sweep hulls it has validated, so a remembered
+// verdict can never go stale. Unfrozen arrays (the transient world hulls built
+// per check, anything a caller may still mutate) are validated every time.
+const polygonVerdicts = new WeakMap();
 function validPolygon(points) {
+  if (!Array.isArray(points)) return false;
+  if (!Object.isFrozen(points)) return computeValidPolygon(points);
+  const remembered = polygonVerdicts.get(points);
+  if (remembered !== undefined) return remembered;
+  const verdict = computeValidPolygon(points);
+  polygonVerdicts.set(points, verdict);
+  return verdict;
+}
+function freezePolygon(points) {
+  if (Array.isArray(points)) { for (const p of points) Object.freeze(p); Object.freeze(points); }
+  return points;
+}
+function computeValidPolygon(points) {
   if (!Array.isArray(points) || points.length < 3 || !points.every(p => finite(p, 2))) return false;
   let sign = 0;
   for (let i = 0; i < points.length; i++) {
@@ -30,6 +52,11 @@ export function bindMotionSweep(skill, asset, key) {
   const sweep = matches[0];
   if (!validPolygon(sweep.wholeBodyXYHull) || !validPolygon(sweep.terminalBodyXYHull)
       || !finite(sweep.initialRootPose, 7) || !finite(sweep.terminalRootPose, 7)) throw new Error('Finite root anchors and convex collision polygons are required');
+  // Freeze the validated static geometry so validPolygon may remember its verdict.
+  freezePolygon(sweep.wholeBodyXYHull); freezePolygon(sweep.terminalBodyXYHull);
+  if (Array.isArray(sweep.collisionParts)) for (const part of sweep.collisionParts) {
+    freezePolygon(part?.motion?.xyHull); freezePolygon(part?.terminal?.xyHull);
+  }
   return sweep;
 }
 

@@ -1,0 +1,1000 @@
+diff --git a/playground/src/carry_destination_footprint.js b/playground/src/carry_destination_footprint.js
+index becdabe..4e4a2f9 100644
+--- a/playground/src/carry_destination_footprint.js
++++ b/playground/src/carry_destination_footprint.js
+@@ -1,7 +1,7 @@
+ /** Isolated geometric preflight; never changes a goal, reference or physics. */
+ import {quatRotateOne} from './math.js';
+ const EPS=1e-9;
+-const finite=(v,n)=>v?.length===n&&Array.from(v).every(Number.isFinite);
++const finite=(v,n)=>{if(v?.length!==n)return false;for(let i=0;i<n;i++)if(!Number.isFinite(v[i]))return false;return true;};
+ function unitQuaternion(q){
+   if(!finite(q,4))throw new Error('A finite XYZW quaternion is required');
+   const norm=Math.hypot(...q);
+@@ -18,13 +18,76 @@ function convexHull(points){
+   return hull;
+ }
+ function bounds(points){
+-  return Object.fromEntries(['X','Y','Z'].flatMap((s,i)=>[
+-    ['min'+s,Math.min(...points.map(p=>p[i]))],['max'+s,Math.max(...points.map(p=>p[i]))]]));
++  let minX=Infinity,minY=Infinity,minZ=Infinity,maxX=-Infinity,maxY=-Infinity,maxZ=-Infinity;
++  for(const p of points){
++    if(p[0]<minX)minX=p[0];if(p[0]>maxX)maxX=p[0];
++    if(p[1]<minY)minY=p[1];if(p[1]>maxY)maxY=p[1];
++    if(p[2]<minZ)minZ=p[2];if(p[2]>maxZ)maxZ=p[2];
++  }
++  return{minX,maxX,minY,maxY,minZ,maxZ};
+ }
+ function bodyName(model,id){
+   let result='',i=model.name_bodyadr[id];while(model.names[i])result+=String.fromCharCode(model.names[i++]);return result;
+ }
+ 
++// Reduction of a compiled collision mesh to a SUPERSET of its 3D convex hull
++// vertices, exact to HULL_FILTER_TOLERANCE (1e-9 m). The XY convex hull and the
++// axis bounds of a rotated point set are those of its hull vertices, so
++// projecting only this subset returns the same polygon and the same min/max: a
++// point strictly inside, or within the tolerance of a facet of, an inner
++// polytope P = conv(E) with E ⊆ V is not a hull vertex of V (a vertex that
++// protrudes less than 1e-9 m past P could be dropped, moving a hull edge by at
++// most that much; planner tolerances are centimetres). E = the vertices extreme
++// in a fixed set of directions; P's facets are found by brute force over
++// triples of E (|E| ≤ ~80). Points of E are always kept. v16 projected every
++// one of the ~13k–38k vertices of each OBJ on every plan check (~57% of a
++// click's planning time); on the four shipped meshes 600 random poses gave
++// identical hulls and bounds.
++const HULL_FILTER_TOLERANCE=1e-9;
++export function hullVertexSuperset(vertices){
++  const n=vertices.length;if(n<=64)return vertices;
++  const directions=[];
++  for(const x of[-1,0,1])for(const y of[-1,0,1])for(const z of[-1,0,1]){
++    if(!x&&!y&&!z)continue;const l=Math.hypot(x,y,z);directions.push([x/l,y/l,z/l]);
++  }
++  const spiral=48,golden=Math.PI*(3-Math.sqrt(5));
++  for(let i=0;i<spiral;i++){
++    const z=1-2*(i+.5)/spiral,r=Math.sqrt(Math.max(0,1-z*z)),a=golden*i;
++    directions.push([r*Math.cos(a),r*Math.sin(a),z]);
++  }
++  const extremeIndex=new Set();
++  for(const d of directions){
++    let best=-Infinity,at=0;
++    for(let i=0;i<n;i++){const v=vertices[i],dot=v[0]*d[0]+v[1]*d[1]+v[2]*d[2];if(dot>best){best=dot;at=i;}}
++    extremeIndex.add(at);
++  }
++  const E=[...extremeIndex].map(i=>vertices[i]);
++  const facets=[];
++  for(let a=0;a<E.length;a++)for(let b=a+1;b<E.length;b++)for(let c=b+1;c<E.length;c++){
++    const A=E[a],B=E[b],C=E[c];
++    const ux=B[0]-A[0],uy=B[1]-A[1],uz=B[2]-A[2],vx=C[0]-A[0],vy=C[1]-A[1],vz=C[2]-A[2];
++    let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
++    const l=Math.hypot(nx,ny,nz);if(l<1e-12)continue;
++    nx/=l;ny/=l;nz/=l;
++    const d=nx*A[0]+ny*A[1]+nz*A[2];
++    let above=false,below=false;
++    for(const P of E){const s=nx*P[0]+ny*P[1]+nz*P[2]-d;if(s>HULL_FILTER_TOLERANCE)above=true;if(s<-HULL_FILTER_TOLERANCE)below=true;if(above&&below)break;}
++    if(above&&below)continue;
++    if(!above)facets.push([nx,ny,nz,d]);
++    if(!below)facets.push([-nx,-ny,-nz,-d]);
++  }
++  if(!facets.length)return vertices;
++  const kept=[];
++  for(let i=0;i<n;i++){
++    const v=vertices[i];
++    if(extremeIndex.has(i)){kept.push(v);continue;}
++    let outside=false;
++    for(const f of facets){if(f[0]*v[0]+f[1]*v[1]+f[2]*v[2]-f[3]>HULL_FILTER_TOLERANCE){outside=true;break;}}
++    if(outside)kept.push(v);
++  }
++  return kept.length>=4?kept:vertices;
++}
++
+ // Cache only a body's current exact pose and exact compiled local geometry.
+ // Compare values rather than quantizing: even a tiny pose/vertex edit invalidates
+ // the entry. Returned projections are detached so callers may edit their copy.
+@@ -32,8 +95,13 @@ function sameShape(object,snapshot){
+   return object.bodyId===snapshot.bodyId&&object.name===snapshot.name
+     &&object.meshes?.length===snapshot.meshes.length&&object.meshes.every((mesh,i)=>{
+       const saved=snapshot.meshes[i];
+-      return mesh.geomId===saved.geomId&&mesh.verticesLocal?.length===saved.verticesLocal.length
+-        &&mesh.verticesLocal.every((v,j)=>v?.length===3&&v.every((x,k)=>Object.is(x,saved.verticesLocal[j][k])));
++      // The constructor deep-freezes verticesLocal (and its reduced hull set), so
++      // the same frozen array object is the same geometry. A foreign, unfrozen
++      // mesh still gets the full value comparison.
++      if(mesh.geomId!==saved.geomId||mesh.verticesLocal?.length!==saved.verticesLocal.length)return false;
++      if(Object.isFrozen(mesh.verticesLocal)&&mesh.verticesLocal===saved.verticesLocal
++        &&(mesh.hullVerticesLocal??null)===(saved.hullVerticesLocal??null))return true;
++      return mesh.verticesLocal.every((v,j)=>v?.length===3&&v.every((x,k)=>Object.is(x,saved.verticesLocal[j][k])));
+     });
+ }
+ 
+@@ -66,7 +134,10 @@ export class ObjectCollisionMeshes {
+           if(!finite(v,3))throw new Error('Finite compiled mesh vertices are required');
+           verticesLocal.push(quatRotateOne(q,v).map((x,i)=>x+p[i]));
+         }
+-        meshes.push({geomId,verticesLocal});
++        for(const v of verticesLocal)Object.freeze(v);
++        Object.freeze(verticesLocal);
++        const hullVerticesLocal=Object.freeze(hullVertexSuperset(verticesLocal));
++        meshes.push(Object.freeze({geomId,verticesLocal,hullVerticesLocal}));
+       }
+       if(!meshes.length)throw new Error('Object has no supported collision mesh');
+       return {bodyId,name:bodyName(model,bodyId),meshes};
+@@ -84,7 +155,8 @@ export class ObjectCollisionMeshes {
+       }
+       const projection=projectObjectCollisionMeshes(object,p,orientation);
+       const shape={bodyId:object.bodyId,name:object.name,meshes:object.meshes.map(mesh=>({geomId:mesh.geomId,
+-        verticesLocal:mesh.verticesLocal.map(vertex=>Array.from(vertex))}))};
++        verticesLocal:Object.isFrozen(mesh.verticesLocal)?mesh.verticesLocal:mesh.verticesLocal.map(vertex=>Array.from(vertex)),
++        hullVerticesLocal:mesh.hullVerticesLocal??null}))};
+       this.#projectionCache.set(object,{pose,shape,projection:structuredClone(projection)});
+       this.#projectionCacheStats.misses++;
+       return projection;
+@@ -98,10 +170,15 @@ export function projectObjectCollisionMeshes(object,positionWorld,quaternionXyzw
+       ||!Array.isArray(object.meshes)||!object.meshes.length||!finite(positionWorld,3))throw new Error('A complete object shape and finite pose are required');
+   const q=unitQuaternion(quaternionXyzwWorld),all=[];
+   const meshes=object.meshes.map(mesh=>{
++    // Frozen meshes built by ObjectCollisionMeshes were validated once; their
++    // hullVerticesLocal is an exact superset of the hull vertices (see above).
++    const reduced=Object.isFrozen(mesh.verticesLocal)&&Array.isArray(mesh.hullVerticesLocal)&&mesh.hullVerticesLocal.length>=4;
+     if(!Number.isInteger(mesh.geomId)||!Array.isArray(mesh.verticesLocal)||mesh.verticesLocal.length<4
+-        ||!mesh.verticesLocal.every(p=>finite(p,3)))throw new Error('Complete finite local collision vertices are required');
+-    const world=mesh.verticesLocal.map(p=>quatRotateOne(q,p).map((x,i)=>x+positionWorld[i]));
+-    all.push(...world);return{geomId:mesh.geomId,hull:convexHull(world),...bounds(world)};
++        ||(!reduced&&!mesh.verticesLocal.every(p=>finite(p,3))))throw new Error('Complete finite local collision vertices are required');
++    const source=reduced?mesh.hullVerticesLocal:mesh.verticesLocal;
++    const world=new Array(source.length);
++    for(let i=0;i<source.length;i++){const r=quatRotateOne(q,source[i]);world[i]=[r[0]+positionWorld[0],r[1]+positionWorld[1],r[2]+positionWorld[2]];}
++    for(const w of world)all.push(w);return{geomId:mesh.geomId,hull:convexHull(world),...bounds(world)};
+   });
+   return{bodyId:object.bodyId,name:object.name,positionWorld:Array.from(positionWorld),quaternionXyzwWorld:q,meshes,...bounds(all)};
+ }
+diff --git a/playground/src/main.js b/playground/src/main.js
+index 2f8a7fd..32c8d81 100644
+--- a/playground/src/main.js
++++ b/playground/src/main.js
+@@ -55,7 +55,7 @@ import { CARRY_CONTROL_BUDGET_CONTROLS, remainingCarryControls } from './carry_t
+ import { readCarryStylePreview, selectCarryStyleCandidates } from './carry_style_preview.js';
+ import { readCarryStyleSampling, CarryStyleRequestSampler, planCarryStyleChoices } from './carry_style_request_sampling.js';
+ import { withStudentLiftProfile, hasPreparedStudentLiftProfile, STUDENT_LIFT_PROFILE } from './student_lift_profile.js';
+-import { planMixedCarry } from './mixed_carry_planner.js';
++import { planMixedCarry, mixedCarryDistanceCoverage } from './mixed_carry_planner.js';
+ import { planCarryGoalRegion } from './carry_goal_region_planner.js';
+ import { planCarryWithPickupPoseSearch } from './pickup_pose_plan_search.js';
+ import { MixedCarryGoalSequenceController } from './mixed_carry_sequence.js';
+@@ -236,12 +236,13 @@ function makeSkyGradientTexture() {
+   return tex;
+ }
+ 
+-function setupThreeJs(canvas, { cameraMode = 'wide' } = {}) {
++function setupThreeJs(canvas, { cameraMode = 'wide', maxPixelRatio = 2 } = {}) {
+   const renderer = new THREE.WebGLRenderer({
+     canvas, antialias: true, alpha: false,
+     powerPreference: 'high-performance',
+   });
+-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
++  // `maxPixelRatio` (URL, default 2 = v16) lets an embedding page trade backbuffer pixels for frame time.
++  renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
+   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+   renderer.shadowMap.enabled = true;
+   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+@@ -491,9 +492,31 @@ function dominantPlanRefusalReason(plan) {
+   for (const [reason, count] of counts) if (count > best) { best = count; dominant = reason; }
+   return dominant;
+ }
+-function carryPlanRefusalStatus(plan) {
+-  if (plan.reason === 'unsupported_distance')
+-    return 'This destination needs a shorter move. Try a closer point along that direction.';
++const OBJECT_DISPLAY_NAMES = Object.freeze({ largebox: 'large box', suitcase: 'suitcase', plasticbox: 'plastic crate', smallbox: 'small box' });
++/** 'active_suitcase_080_080_080' -> 'suitcase' (user-facing). Unknown bodies read as 'box'. */
++function objectDisplayName(bodyName) {
++  const match = /^active_([a-z]+)_/.exec(String(bodyName ?? ''));
++  return (match && OBJECT_DISPLAY_NAMES[match[1]]) || 'box';
++}
++/** "1.8–2.3 m, 3.6–4.6 m or 5.4–6.9 m" from planner distance intervals. */
++function describeReachIntervals(intervals) {
++  const parts = intervals.map(([lo, hi]) => `${lo.toFixed(1)}–${hi.toFixed(1)} m`);
++  return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} or ${parts.at(-1)}` : parts[0] ?? '';
++}
++/** Why a distance was refused: too close, too far, or in a gap between the
++ * supported carries. v16 said "needs a shorter move" for every case, which sent
++ * suitcase users (single 2.0 m clip, nothing shorter) the wrong way. */
++function unsupportedDistanceStatus(plan, label) {
++  const intervals = (plan.supportedDistanceIntervalsM ?? []).filter(i => Array.isArray(i) && i.length === 2 && i.every(Number.isFinite));
++  const distance = plan.distanceM;
++  if (!intervals.length || !Number.isFinite(distance)) return `That distance is not supported for the ${label}. Try a different destination.`;
++  const shortest = intervals[0][0], longest = intervals.at(-1)[1];
++  if (distance < shortest) return `Too close: the ${label} carry needs at least ${shortest.toFixed(1)} m. Click farther away in the same direction.`;
++  if (distance > longest) return `Too far: the ${label} can be carried at most ${longest.toFixed(1)} m in one request. Click closer in the same direction.`;
++  return `That distance falls between the supported ${label} carries (${describeReachIntervals(intervals)}). Click a little closer or farther.`;
++}
++function carryPlanRefusalStatus(plan, objectLabel = 'box') {
++  if (plan.reason === 'unsupported_distance') return unsupportedDistanceStatus(plan, objectLabel);
+   const dominant = plan.reason === 'occupied_carry_destination' ? plan.reason : dominantPlanRefusalReason(plan);
+   if (dominant === 'occupied_carry_destination')
+     return 'That destination is occupied by another box. Choose a clearer spot.';
+@@ -533,7 +556,9 @@ async function main() {
+   if (presentationEnabled) document.body?.classList?.add('release-presentation');
+ 
+   setStatus('Initializing renderer…');
+-  const { renderer, scene, camera, controls } = setupThreeJs(canvas, { cameraMode });
++  const maxPixelRatioParam = Number.parseFloat(urlParams.get('maxPixelRatio') ?? '');
++  const maxPixelRatio = Number.isFinite(maxPixelRatioParam) && maxPixelRatioParam >= 1 ? Math.min(maxPixelRatioParam, 2) : 2;
++  const { renderer, scene, camera, controls } = setupThreeJs(canvas, { cameraMode, maxPixelRatio });
+ 
+   setStatus('Loading physics engine and scene…');
+   const { mujoco, model, data } = await loadMujocoScene(SCENE_URL, setStatus);
+@@ -897,6 +922,15 @@ async function main() {
+     && urlParams.get('restrictedCarryLibrary') !== '0';
+   const restrictedCarryGoalRegionEnabled = restrictedCarryLibraryEnabled
+     && urlParams.get('restrictedCarryGoalRegion') !== '0';
++  // maxPickups=1|2|3 (default 3 = v16): the most pickups a carry request may plan.
++  // The site embeds with 1. Probe of 12 largebox floor clicks (2026-09-23, same
++  // runtime): with 3, the 7 multi-pickup plans v16 chose completed 3 times, fell
++  // twice and stalled twice (7/12 clicks completed overall); with 1, 10/12
++  // completed and none stalled, 5 clicks being moved onto single-pickup coverage
++  // (longest delivered carry 2.57 m). The reach ring and destination snapping
++  // use the same coverage, so a click still turns into one supported carry.
++  const maxCarryPickupsParam = Number.parseInt(urlParams.get('maxPickups') ?? '', 10);
++  const maxCarryPickups = [1, 2, 3].includes(maxCarryPickupsParam) ? maxCarryPickupsParam : 3;
+   // WS-B planner honesty (2026-09-15). Each behaviour has its own URL parameter:
+   // replanRemaining=1 (default on): after a refused live distance, replan the
+   //   remaining goal from the live box toward the ORIGINAL destination.
+@@ -1079,7 +1113,18 @@ async function main() {
+     }
+     queuedBoxTask = null;
+   }
+-  const loadedSkills = new Map();
++  // Promise cache keyed exactly as v16 (kind, 'carry_long', library ids, step/turn ids). `resolved`
++  // mirrors the settled values so the reach guide and destination snapping can read
++  // them synchronously; a rejected or deleted entry never leaves a stale value behind.
++  const loadedSkills = new (class extends Map {
++    resolved = new Map();
++    set(key, promise) {
++      super.set(key, promise);
++      Promise.resolve(promise).then(skill => { if (this.get(key) === promise) this.resolved.set(key, skill); }, () => {});
++      return this;
++    }
++    delete(key) { this.resolved.delete(key); return super.delete(key); }
++  })();
+   let activeBoxTask = null;
+   // Shared normal-terminal retirement. Called once the completed controller has
+   // already published its terminal receipt and any required box exit has finished.
+@@ -1223,11 +1268,41 @@ async function main() {
+   let pendingPushAdmission = null;   // R1b (v14a): a push-routed click's lane admission; steps wait for it like the retarget barrier
+   const skillDecisions = [];
+   function setTaskStatus(message) { if (taskStatus) taskStatus.textContent = taskStatusSkillLabel ? `[${taskStatusSkillLabel}] ${message}` : message; }
++  // Plain-language HUD copy for the arbiter's decision. The raw reason string
++  // stays in the element's title (and, unchanged, in every record/getState).
++  const PUSH_BLOCKER_TEXT = Object.freeze({
++    no_push_capability: 'no push clip for this object', task_active: 'a task is still running',
++    below_push_range: 'closer than the 0.95 m push clip', above_push_range: 'farther than the 0.95 m push clip',
++    above_delivered_reach: 'beyond the push clip\'s measured reach', goal_not_on_floor: 'destination is not on the floor',
++    object_yaw_missing: 'object heading unknown', off_face: 'box face is not square to the push direction',
++    off_cone: 'robot is not behind the object', entry_state_unvalidated: null, approach_unknown: 'approach not evaluated',
++    approach_blocked: 'approach line is blocked', live_entry_unavailable: 'robot is not standing still yet',
++    approach_too_far: 'approach is too long', robot_pose_missing: 'robot pose unknown',
++    distance_below_pickup_tolerance: null, unsupported_object: 'this object has no carry or push skill', invalid_input: 'invalid destination',
++  });
++  function describeSkillDecision(decision) {
++    const label = String(decision.skill ?? '').toUpperCase(), reason = String(decision.reason ?? '');
++    if (decision.skill === 'refuse') return `No skill: ${decision.message ?? reason.replace(/_/g, ' ')}`;
++    if (reason.startsWith('push_blocked:')) {
++      const parts = reason.slice('push_blocked:'.length).split(',')
++        .map(code => PUSH_BLOCKER_TEXT[code] === undefined ? code.replace(/_/g, ' ') : PUSH_BLOCKER_TEXT[code]).filter(Boolean);
++      return `Chosen skill: ${label} — push ruled out (${parts.join('; ')})`;
++    }
++    if (reason.startsWith('push_preconditions_satisfied')) return `Chosen skill: ${label} — straight ahead, within the 0.95 m push clip`;
++    if (reason.startsWith('goal_within_placement_tolerance')) return `Chosen skill: ${label} — the destination is where the object already stands`;
++    return `Chosen skill: ${label} — ${reason.replace(/_/g, ' ')}`;
++  }
++  let destinationAdjustmentNote = null;   // set by snapCarryDestination for the current click; shown after the decision
++  let lastGoalSource = null;              // 'click' (picker) or 'api' (__interactiveDemo) for the destination being routed
+   function showSkillDecision(decision = null, note = null) {
+     if (!skillDecisionStatus) return;
++    if (!decision) destinationAdjustmentNote = null;
++    // The adjustment note leads: a one-line HUD truncates the tail, and the moved
++    // destination is what the user must learn first.
+     skillDecisionStatus.textContent = decision
+-      ? `Chosen skill: ${decision.skill.toUpperCase()} — ${decision.reason}`
++      ? (destinationAdjustmentNote ? `${destinationAdjustmentNote} · ` : '') + describeSkillDecision(decision)
+       : `Chosen skill: none — ${note ?? 'select an object and click a floor target.'}`;
++    skillDecisionStatus.title = decision ? `${decision.skill}: ${decision.reason}` : '';
+   }
+   function cancelPendingBoxTask(reason = 'user_command') {
+     if (!skillLoading) return;
+@@ -1241,8 +1316,14 @@ async function main() {
+     || pendingSegmentCarryController !== null || pendingRecoveryParent !== null
+     || Boolean(boxExitController?.isBusy())
+     || ['approach', 'teacher', 'teacher_turn', 'teacher_step', 'teacher_settling', 'settling', 'settling_quiet'].includes(skillController?.phase); }
++  const capitalize = text => text ? text[0].toUpperCase() + text.slice(1) : text;
++  /** 'large box' / 'suitcase' for the object a running or just-finished task handles. */
++  function carriedObjectLabel() {
++    return objectDisplayName(skillController?.skill?.objectBodyName ?? activeCarryController?.skill?.objectBodyName
++      ?? boxExitController?.objectBodyName ?? user.activeObjName);
++  }
+   function finishingTaskMessage() {
+-    return boxExitController?.isBusy() ? 'Stepping clear of the box before following the new command.'
++    return boxExitController?.isBusy() ? `Stepping clear of the ${carriedObjectLabel()} before following the new command.`
+       : skillController?.phase === 'teacher_step' ? 'Finishing this step, then cancelling the box task.'
+       : pendingCarryController || skillController?.phase === 'teacher_turn' ? 'Finishing the turn, then cancelling the box task.'
+       : 'Finishing the setdown. Movement resumes when the box is down.';
+@@ -1651,6 +1732,11 @@ async function main() {
+     },
+     objectGoalFromGround,
+     onFloorGoal: goal => { if (restrictedMode) submitRestrictedFloorGoal(goal); },
++    getReachGuide: () => {
++      if (user.activeObjName === null || activeObjBodyId < 0) return null;
++      const intervals = carryReachIntervals(user.activeObjName);
++      return intervals ? { center: [data.xpos[activeObjBodyId * 3], data.xpos[activeObjBodyId * 3 + 1]], intervals } : null;
++    },
+     getTaskGoal: () => taskDestinationWorld,
+     getTaskGoalRefused: () => {
+       // Read request outcomes only to color the user's marker. This has no
+@@ -1661,10 +1747,11 @@ async function main() {
+         && (request.disposition === 'refused' || (request.disposition === 'outcome'
+           && !['finished', 'cancelled'].includes(request.reason))));
+     },
+-    onObjectGoal: goal => {
++    onObjectGoal: (goal, { source = 'api', hitBody = null } = {}) => {
+       // The selected floor destination goes to the carry planner. Keep the
+       // student in standing/locomotion while optional task assets load.
+       user.objGoalWorld = null;
++      lastGoalSource = source;
+       // Retarget binds to the live controller's selected object, including a
+       // Plastic-box carry started by the existing multi-object sequence.  The
+       // ordinary new-task path below intentionally remains Large-box only.
+@@ -1679,6 +1766,16 @@ async function main() {
+           : `Carry destination unchanged: ${outcome.reason}`));
+         return;
+       }
++      // A person's click on bare floor that no carry can serve is moved onto the
++      // nearest supported distance (e.g. the suitcase's single 2.0 m clip); the HUD
++      // says so after the decision. Automation requests (__interactiveDemo), clicks
++      // that land on an object body, and clicks while a task is running, loading or
++      // queued keep the v16 route unchanged (those are measured from a moving object).
++      destinationAdjustmentNote = null;
++      if (source === 'click' && hitBody === null && !skillActive() && !skillLoading && queuedBoxTask === null && pendingNormalGroundPush === null) {
++        const adjusted = snapCarryDestination(goal);
++        if (adjusted.note) { destinationAdjustmentNote = adjusted.note; goal = adjusted.goal; }
++      }
+       // B9 (skillArbiter=1): one interface. The deterministic skill arbiter (skill_arbiter.js) picks the
+       // existing lane for this click (push / carry / pickup) or the existing refusal text.
+       if (skillArbiterEnabled) { void routeFloorGoalThroughSkillArbiter(goal); return; }
+@@ -2113,7 +2210,7 @@ async function main() {
+       // Preserve the DOF and body histories from the actual approach. This
+       // bounded hold uses the original terminal; it never reanchors the goal.
+       user.humanGoalWorld = user.objGoalWorld = null; user.releaseKeys();
+-      setTaskStatus('Settling closer to the box before lifting…');
++      setTaskStatus(`Settling closer to the ${carriedObjectLabel()} before lifting…`);
+       return recovery.step(skillProprio());
+     }
+ 
+@@ -2294,7 +2391,7 @@ async function main() {
+       ...(objectClassRoutingEnabled ? { yawSymmetry: objectRouter.yawSymmetry(rawSkill.objectBodyName) } : {}),
+       carryDescentSagHold: carryDescentSagHoldEnabled,
+       ...objectRouter.carryOutcomeOverrides(rawSkill.objectBodyName),   // OFF: {} (v5 key set); ON+suitcase: {outcomeRequirements} incl. tilt
+-      maxSegments: rawSkill === longCarrySkill ? 1 : 3,
++      maxSegments: rawSkill === longCarrySkill ? 1 : maxCarryPickups,
+       initialStanceFrames: useMatchedCarry || rawSkill === longCarrySkill ? 90 : carryInitialStanceFrames,
+       requireSegmentExit: boxExitEnabled,
+       quietSettling: quietEndingsEnabled ? { window: quietEndingConfig.window,
+@@ -2337,7 +2434,7 @@ async function main() {
+       const controlBudget = carryRequestControlBudget(activeBoxTaskRequestId);
+       record.remainingControls = controlBudget?.remainingControls ?? null;
+       if (!controlBudget) return refuse('request_clock_unavailable');
+-      const pickupsUsed = carryTaskPickupCount(carry), maxSegments = 3 - pickupsUsed;
++      const pickupsUsed = carryTaskPickupCount(carry), maxSegments = maxCarryPickups - pickupsUsed;
+       record.pickupsUsed = pickupsUsed; record.maxSegments = maxSegments;
+       if (maxSegments < 1) return refuse('pickup_budget_exhausted');
+       const library = buildCarryLibrary(carryLibraryContext, request.remainingDistanceM);
+@@ -2405,7 +2502,7 @@ async function main() {
+         remainingControls: controlBudget.remainingControls, estimatedControls: record.estimatedControls,
+         plannedCandidateIds: record.plannedCandidateIds, pickupsUsed, budgetRisk: plan.budgetRisk === true });
+       record.started = true;
+-      setTaskStatus(`Box set down ${Math.round(request.remainingDistanceM * 100)} cm short. Continuing the carry to your destination…`);
++      setTaskStatus(`${capitalize(carriedObjectLabel())} set down ${Math.round(request.remainingDistanceM * 100)} cm short. Continuing the carry to your destination…`);
+       return record;
+     } catch (error) {
+       console.warn('[replan remaining goal]', error);
+@@ -2413,9 +2510,121 @@ async function main() {
+     }
+   }
+ 
++  /** The reference files a box task of `kind` for `carryProfile` needs, with the
++   * exact v16 cache keys and URLs (primary, optional long carry, carry library,
++   * turn and step records). Used by startBoxTask, the startup prefetch and the
++   * reach guide, so all three agree on what "loaded" means. */
++  function carryReferencePlan(carryProfile, kind, { hasGoal = true, useMatchedCarry = false } = {}) {
++    const primarySkillKey = useMatchedCarry ? 'matched_carry_prefix' : objectRouter.skillCacheKey(carryProfile, kind);
++    const longCarryUrl = objectRouter.referenceUrl(carryProfile, 'carry_long');   // OFF: 'public/teacher_carry_long_reference.json'
++    const primaryReferenceUrl = useMatchedCarry ? longCarryUrl : objectRouter.referenceUrl(carryProfile, kind);   // OFF: task.referenceUrl
++    const longCarryKey = !useMatchedCarry && hasGoal && kind === 'carry' && restrictedLongCarryEnabled && longCarryUrl ? 'carry_long' : null;
++    const libraryKeys = longCarryKey && restrictedCarryLibraryEnabled
++      ? objectRouter.libraryKeys(carryProfile, ['short_0184', 'short_0295', 'medium_1224', ...(alternateCarryEnabled ? ['alternate'] : []), ...(longClipLibraryEnabled ? LONG_CLIP_KEYS : []), ...(midClipLibraryEnabled ? MID_CLIP_KEYS : [])]) : [];
++    const turnKeys = hasGoal ? TURN_REFERENCES : [];
++    const stepKeys = hasGoal ? (teacherApproachEnabled ? STEP_REFERENCES
++      : teacherStandingMode === 'neutral' ? [STEP_REFERENCES[0]] : []) : [];
++    const entries = [{ key: primarySkillKey, url: primaryReferenceUrl },
++      ...(longCarryKey ? [{ key: longCarryKey, url: longCarryUrl }] : []),
++      ...libraryKeys.map(key => ({ key, url: objectRouter.referenceUrl(carryProfile, key) })),   // OFF: `public/teacher_carry_${key}_reference.json`
++      ...[...turnKeys, ...stepKeys].map(key => ({ key, url: `public/teacher_${key}_reference.json` }))];
++    return { primarySkillKey, primaryReferenceUrl, longCarryUrl, longCarryKey, libraryKeys, turnKeys, stepKeys, entries };
++  }
++  function ensureSkillLoaded(key, url) {
++    if (!loadedSkills.has(key)) loadedSkills.set(key,
++      Promise.resolve().then(() => loadTeacherSkill(url)).catch(error => { loadedSkills.delete(key); throw error; }));
++    return loadedSkills.get(key);
++  }
++  /** Distances (m from the object) the carry planner can serve for `bodyName`,
++   * from the same library / single-reference rules startBoxTask applies, or
++   * null until the references are loaded. Cached per loaded-set. */
++  let reachIntervalsCache = null;
++  function carryReachIntervals(bodyName) {
++    if (!bodyName) return null;
++    let profile;
++    try { profile = objectRouter.profileFor(bodyName); } catch { return null; }
++    if (objectRouter.taskRefusal(bodyName, 'carry')) return null;
++    const references = carryReferencePlan(profile, 'carry', { hasGoal: true });
++    const primary = loadedSkills.resolved.get(references.primarySkillKey);
++    if (!primary) return null;
++    const stamp = `${bodyName}|${loadedSkills.resolved.size}`;
++    if (reachIntervalsCache?.stamp === stamp) return reachIntervalsCache.intervals;
++    let intervals = null;
++    try {
++      if (references.longCarryKey) {
++        const longCarrySkill = loadedSkills.resolved.get(references.longCarryKey);
++        const librarySkills = references.libraryKeys.map(key => loadedSkills.resolved.get(key));
++        if (restrictedCarryLibraryEnabled && longCarrySkill && librarySkills.length && librarySkills.every(Boolean)) {
++          // requestedDistanceM null: no distance-dependent exclusion (carryRanking=excludeLong), so the
++          // coverage is the union of what a request at any distance can plan.
++          const library = buildCarryLibrary({ defaultSkill: primary, longCarrySkill, librarySkills, libraryKeys: references.libraryKeys }, null);
++          intervals = mixedCarryDistanceCoverage(library, { maxSegments: maxCarryPickups }).supportedDistanceIntervalsM;
++        }
++      } else {
++        // Single-reference object (suitcase): the same planCarrySegments defaults startBoxTask falls back to.
++        intervals = planCarrySegments([0, 0, 0], [10, 0, 0], primary, { maxSegments: maxCarryPickups }).supportedDistanceIntervalsM;
++      }
++    } catch (error) { console.warn('[reach guide]', error); intervals = null; }
++    reachIntervalsCache = { stamp, intervals: intervals ? Object.freeze(intervals.map(([lo, hi]) => Object.freeze([lo, hi]))) : null };
++    return reachIntervalsCache.intervals;
++  }
++  /** Move a floor click that no carry can serve onto the nearest supported
++   * distance along the same bearing (1 cm inside the band). Clicks inside a band,
++   * on the object (pickup / already placed) or before the references are loaded
++   * are returned unchanged. This changes only the requested destination, never
++   * a planner rule or tolerance; the request log records the moved goal. */
++  function snapCarryDestination(goal) {
++    const unchanged = { goal, note: null };
++    const bodyName = user.activeObjName;
++    if (!bodyName || activeObjBodyId < 0 || !goal || goal.length !== 3) return unchanged;
++    const intervals = carryReachIntervals(bodyName);
++    if (!intervals?.length) return unchanged;
++    const ox = data.xpos[activeObjBodyId * 3], oy = data.xpos[activeObjBodyId * 3 + 1];
++    const dx = goal[0] - ox, dy = goal[1] - oy, distance = Math.hypot(dx, dy);
++    if (!(distance > CARRY_PLACEMENT_TOLERANCE_M + 1e-12)) return unchanged;
++    if (intervals.some(([lo, hi]) => distance >= lo - 1e-9 && distance <= hi + 1e-9)) return unchanged;
++    let target = null, gap = Infinity;
++    for (const [lo, hi] of intervals) {
++      const inset = Math.min(0.01, (hi - lo) / 2);
++      for (const [edge, inside] of [[lo, lo + inset], [hi, hi - inset]]) {
++        const g = Math.abs(distance - edge);
++        if (g < gap) { gap = g; target = inside; }
++      }
++    }
++    if (target === null || !(target > CARRY_PLACEMENT_TOLERANCE_M)) return unchanged;
++    const scale = target / distance;
++    const label = objectDisplayName(bodyName);
++    return { goal: [ox + dx * scale, oy + dy * scale, goal[2]],
++      note: `Destination moved to ${target.toFixed(2)} m along your click: ${distance.toFixed(2)} m is ${distance < target ? 'too close for' : 'beyond'} the ${label} carry (${describeReachIntervals(intervals)})` };
++  }
++  /** Load every carry reference the release objects can need right after
++   * startup, one file at a time, so the first click does not download and
++   * parse ~40 MB of JSON. Same cache and keys as startBoxTask; failures only log. */
++  function warmCarryReferences() {
++    const jobs = [];
++    for (const bodyName of interactiveSelectableNames) {
++      let profile;
++      try { profile = objectRouter.profileFor(bodyName); } catch { continue; }
++      if (objectRouter.taskRefusal(bodyName, 'carry')) continue;
++      for (const entry of carryReferencePlan(profile, 'carry', { hasGoal: true }).entries)
++        if (entry.url && !jobs.some(job => job.key === entry.key)) jobs.push(entry);
++    }
++    void (async () => {
++      const started = performance.now();
++      for (const { key, url } of jobs) {
++        try { await ensureSkillLoaded(key, url); }
++        catch (error) { console.warn('[prefetch]', key, error.message); }
++        await new Promise(resolve => setTimeout(resolve, 100));
++      }
++      console.log(`[prefetch] ${jobs.length} carry references ready in ${((performance.now() - started) / 1000).toFixed(1)} s`);
++    })();
++  }
+   async function startBoxTask(kind, requestedGoal = null, queuedRequestId = null) {
+     const task = BOX_TASKS[kind];
+     if (!task) throw new Error('Unknown box task');
++    // Only a person's click (routed synchronously from onObjectGoal) gets the painted frame below.
++    const interactiveRequest = queuedRequestId === null && lastGoalSource === 'click';
++    lastGoalSource = null;
+     const requestId = queuedRequestId ?? beginBoxTaskRequest(kind, requestedGoal);
+     const styleRequestToken = carryStyleRequestSampler?.reserve({ episodeVersion, requestId, kind,
+       originalGoalWorld: requestedGoal }) ?? null;
+@@ -2475,33 +2684,25 @@ async function main() {
+     setTaskStatus('Loading the box task…');
+     try {
+       loadTeacherActor();
+-      const primarySkillKey = useMatchedCarry ? 'matched_carry_prefix' : objectRouter.skillCacheKey(carryProfile, kind);
+-      const longCarryUrl = objectRouter.referenceUrl(carryProfile, 'carry_long');   // OFF: 'public/teacher_carry_long_reference.json'
+-      const primaryReferenceUrl = useMatchedCarry ? longCarryUrl : objectRouter.referenceUrl(carryProfile, kind);   // OFF: task.referenceUrl
+-      if (!loadedSkills.has(primarySkillKey)) loadedSkills.set(primarySkillKey,
+-        Promise.resolve().then(() => loadTeacherSkill(primaryReferenceUrl))
+-          .catch(error => { loadedSkills.delete(primarySkillKey); throw error; }));
+-      const longCarryKey = !useMatchedCarry && requestedGoal && kind === 'carry' && restrictedLongCarryEnabled && longCarryUrl ? 'carry_long' : null;
+-      if (longCarryKey && !loadedSkills.has(longCarryKey)) loadedSkills.set(longCarryKey,
+-        Promise.resolve().then(() => loadTeacherSkill(longCarryUrl))
+-          .catch(error => { loadedSkills.delete(longCarryKey); throw error; }));
+-      const libraryKeys = longCarryKey && restrictedCarryLibraryEnabled
+-        ? objectRouter.libraryKeys(carryProfile, ['short_0184', 'short_0295', 'medium_1224', ...(alternateCarryEnabled ? ['alternate'] : []), ...(longClipLibraryEnabled ? LONG_CLIP_KEYS : []), ...(midClipLibraryEnabled ? MID_CLIP_KEYS : [])]) : [];
+-      for (const key of libraryKeys) if (!loadedSkills.has(key)) loadedSkills.set(key,
+-        Promise.resolve().then(() => loadTeacherSkill(objectRouter.referenceUrl(carryProfile, key)))   // OFF: `public/teacher_carry_${key}_reference.json`
+-          .catch(error => { loadedSkills.delete(key); throw error; }));
+-      const turnKeys = requestedGoal ? TURN_REFERENCES : [];
+-      const stepKeys = requestedGoal ? (teacherApproachEnabled ? STEP_REFERENCES
+-        : teacherStandingMode === 'neutral' ? [STEP_REFERENCES[0]] : []) : [];
+-      for (const key of [...turnKeys, ...stepKeys]) if (!loadedSkills.has(key)) loadedSkills.set(key,
+-        Promise.resolve().then(() => loadTeacherSkill(`public/teacher_${key}_reference.json`))
+-          .catch(error => { loadedSkills.delete(key); throw error; }));
++      // Same keys/URLs as v16 (see carryReferencePlan); the startup prefetch fills the same cache.
++      const references = carryReferencePlan(carryProfile, kind, { hasGoal: Boolean(requestedGoal), useMatchedCarry });
++      const { primarySkillKey, longCarryKey, libraryKeys, turnKeys, stepKeys } = references;
++      for (const { key, url } of references.entries) ensureSkillLoaded(key, url);
+       const [, defaultSkill, longCarrySkill, librarySkills, ...loadedLocomotionSkills] = await Promise.all([skillLoadPromise, loadedSkills.get(primarySkillKey),
+         longCarryKey ? loadedSkills.get(longCarryKey) : null,
+         Promise.all(libraryKeys.map(key => loadedSkills.get(key))),
+         ...turnKeys.map(key => loadedSkills.get(key)), ...stepKeys.map(key => loadedSkills.get(key))]);
+       let rawSkill = defaultSkill, mixedPlan = null, carryStyleSamplingSelection = null;
+       const loadedTurnSkills = loadedLocomotionSkills.slice(0, turnKeys.length);
++      if (requestedGoal && interactiveRequest && !paused) {
++        // The geometric planner below is synchronous and can block for 0.1–10 s on a
++        // far click. Let the browser paint the marker and this line first; the
++        // loop may run one more standing control in between (the version guards
++        // below still apply). Automation requests and a paused loop never wait.
++        setTaskStatus('Planning the carry…');
++        await new Promise(resolve => { let done = false; const finish = () => { if (!done) { done = true; resolve(); } };
++          requestAnimationFrame(finish); setTimeout(finish, 60); });
++      }
+       if (activeStepPromise) await activeStepPromise;
+       if (version !== episodeVersion || requestVersion !== skillRequestVersion || restrictedSuspended) {
+         carryStyleRequestSampler?.discard(requestId, version !== episodeVersion ? 'episode_reset'
+@@ -2556,7 +2757,7 @@ async function main() {
+               library: regionLibrary, extendedLibrary, tiers: pickupSearch ? pickupPoseSearchTiers : ['none'],
+               makeCheckPlan: require => makeCarryPlanChecker(pickupSearch ? { ...pickupSearch, require } : null),
+               planOnce: ({ library, checkPlan }) => planCarryDestination({ requestId, stage: 'request', originalGoalWorld: requestedGoal,
+-                initialObjectPositionWorld: regionInitial, goalWorld: conditioningGoal, library, checkPlan, maxSegments: 3 }) });
++                initialObjectPositionWorld: regionInitial, goalWorld: conditioningGoal, library, checkPlan, maxSegments: maxCarryPickups }) });
+             const { chosen, tierResults } = searched, planning = chosen.planned, checkPlan = chosen.checkPlan;
+             mixedPlan = searched.plan;
+             lastCarryLibrary = { requestId, library: regionLibrary, checkPlan };
+@@ -2615,7 +2816,7 @@ async function main() {
+             pickupPoseSearch: pickupPoseSearchReviews.at(-1)?.requestId === requestId ? structuredClone(pickupPoseSearchReviews.at(-1)) : null };
+           if (selected.supported) rawSkill = selected.skill;
+         }
+-        const plan = selected?.plan ?? planCarrySegments(Array.from(data.xpos.slice(id * 3, id * 3 + 3)), conditioningGoal, rawSkill);
++        const plan = selected?.plan ?? planCarrySegments(Array.from(data.xpos.slice(id * 3, id * 3 + 3)), conditioningGoal, rawSkill, { maxSegments: maxCarryPickups });
+         if (!plan.supported) {
+           const intervals = selected?.supportedDistanceIntervalsM ?? plan.supportedDistanceIntervalsM;
+           const refusalReason = truthfulRefusalReason(plan);
+@@ -2628,7 +2829,7 @@ async function main() {
+             dominantReason: plan.dominantReason ?? null, dominantObstacle: plan.dominantObstacle ?? null,
+             checkedPlans: plan.checkedPlans ?? null,
+           });
+-          setTaskStatus(carryPlanRefusalStatus(plan));
++          setTaskStatus(carryPlanRefusalStatus(plan, objectDisplayName(carryProfile.bodyName)));
+           return false;
+         }
+         if (carryReferenceClearance) {
+@@ -2705,7 +2906,7 @@ async function main() {
+           sourceFrames:activeCarryController.skill.sourceFrames};
+         updateMatchedCarryMarker();
+       }
+-      setTaskStatus('Walking to the large box…');
++      setTaskStatus(`Walking to the ${objectDisplayName(skillController.skill?.objectBodyName)}…`);
+       boxTaskRequestLog.transition(requestId, 'started', 'approach_started', boxRequestClock());
+       taskCoverageCapture?.capture({stage:'execution_start', requestId, task:kind,
+         originalGoalWorld:requestedGoal, clock:boxRequestClock()});
+@@ -2935,7 +3136,7 @@ async function main() {
+     picker.syncFromUserState();
+     taskStatusSkillLabel = null;
+     showSkillDecision(null, 'selection cleared.');
+-    setTaskStatus('Selection cleared. Click the large box to select it again.');
++    setTaskStatus('Selection cleared. Click the large box or the suitcase to select it.');
+   });
+   pickupButton?.addEventListener('click', startPickup);
+   carryButton?.addEventListener('click', startCarry);
+@@ -2958,6 +3159,14 @@ async function main() {
+   // re-enter itself.
+   let activeStepPromise = null;
+   let paused = urlParams.get('paused') === '1';
++  // realtime=1: the browser loop advances one 1/60 s control per 1/60 s of wall
++  // time instead of one per animation frame, so the robot moves at the same
++  // speed on a 120 Hz display as on a 60 Hz one (v16 ran 1.5-2x fast there and
++  // its speed followed the frame rate). At most one control per frame either
++  // way; a slow machine still runs slower than real time, exactly as before.
++  const realtimePacing = urlParams.get('realtime') === '1';
++  const controlPeriodMs = 1000 / CONTROL_HZ;
++  let stepDebtMs = 0, lastLoopMs = null;
+   let frameCount = 0;
+   let lastFpsT = performance.now();
+ 
+@@ -3453,7 +3662,7 @@ async function main() {
+         translator.reset(); translator.setClickPositionSource('stable_receding');
+         user.humanGoalWorld = user.objGoalWorld = null; user.releaseKeys();
+         boxApproachPlanner?.reset(); lastApproachRoute = null;
+-        setTaskStatus('Retrying the approach to the box…');
++        setTaskStatus(`Retrying the approach to the ${carriedObjectLabel()}…`);
+         skillStep = carry.step(skillProprio());
+       } else {
+         skillController = null;
+@@ -3508,7 +3717,7 @@ async function main() {
+       translator.reset();
+       user.humanGoalWorld = user.objGoalWorld = null;
+       user.releaseKeys();
+-      setTaskStatus('Moving to another side of the box for this carry…');
++      setTaskStatus(`Moving to another side of the ${carriedObjectLabel()} for this carry…`);
+     }
+     if (skillStep?.stepFinished || skillStep?.turnFinished) {
+       translator.reset(); translator.setClickPositionSource('matched');
+@@ -3520,8 +3729,8 @@ async function main() {
+       user.humanGoalWorld = user.objGoalWorld = null;
+       user.releaseKeys();
+       setTaskStatus(skillStep.completedSegments < skillStep.segmentCount
+-        ? `Box set down. Preparing carry ${skillStep.completedSegments + 1} of ${skillStep.segmentCount}…`
+-        : 'Box set down. Returning to standing…');
++        ? `${capitalize(carriedObjectLabel())} set down. Preparing carry ${skillStep.completedSegments + 1} of ${skillStep.segmentCount}…`
++        : `${capitalize(carriedObjectLabel())} set down. Returning to standing…`);
+     }
+     if (stagedStudentApproach?.active) {
+       const transition = stagedStudentApproach.observeParent(skillStep, firstPickupStudentContext());
+@@ -3647,11 +3856,11 @@ async function main() {
+         }
+       }
+       if (previousSkillPhase !== 'approach') setTaskStatus(skillStep.segmentCount
+-        ? `Walking to the box for carry ${skillStep.segmentIndex + 1} of ${skillStep.segmentCount}…`
++        ? `Walking to the ${carriedObjectLabel()} for carry ${skillStep.segmentIndex + 1} of ${skillStep.segmentCount}…`
+         : 'Walking to the box…');
+       if (pickupFacingApproachEnabled && previousSkillPhase !== 'approach') {
+         if (skillController instanceof PickupFacingApproachController)
+-          setTaskStatus('Walking around the box to face the pickup…');
++          setTaskStatus(`Walking around the ${carriedObjectLabel()} to face the pickup…`);
+         else if (pickupFacingPlans.at(-1)?.requestId === activeBoxTaskRequestId
+             && pickupFacingPlans.at(-1)?.supported === false)
+           setTaskStatus('Using the ordinary approach for this destination…');
+@@ -3735,15 +3944,15 @@ async function main() {
+       setTaskStatus(skillStep.facingTurnRefused
+           ? 'Could not turn to face the box from here. Choose another destination or approach the box from a different side.'
+         : skillStep.completionReason === 'cancelled' ? 'Box task cancelled.'
+-        : skillStep.completionReason === 'placement_missed' ? `Box set down. ${Math.round(remaining * 100)} cm remain; stepping clear before another request.`
++        : skillStep.completionReason === 'placement_missed' ? `${capitalize(carriedObjectLabel())} set down. ${Math.round(remaining * 100)} cm remain; stepping clear before another request.`
+         : skillStep.completionReason === 'finished' ? 'Box placed. Stepping clear…'
+         : skillStep.completionReason === 'lost_balance' ? 'The robot lost balance. Reset the scene to try again.'
+         : skillStep.completionReason === 'failed_lift' ? 'The box was not lifted. Move closer and try again.'
+         : skillStep.completionReason === 'failed_setdown' ? 'The box did not settle on the floor. Reset the scene to try again.'
+         : skillStep.completionReason === 'needs_facing' ? 'Approach the box from the other side, then try again.'
+         : skillStep.completionReason === 'unsupported_live_distance' ? (skillStep.replanRefusal?.reason === 'not_enough_time_left'
+-          ? 'Box set down. Not enough time left to finish the carry to your destination.'
+-          : 'Box set down. Choose a new destination to continue.')
++          ? `${capitalize(carriedObjectLabel())} set down. Not enough time left to finish the carry to your destination.`
++          : `${capitalize(carriedObjectLabel())} set down. Choose a new destination to continue.`)
+         : skillStep.completionReason === 'occupied_carry_destination' ? 'There is not enough room for the box at that destination. Choose a clearer spot.'
+         : skillStep.completionReason === 'carry_reference_clearance' ? 'The carry would pass too close to another box. Choose a different direction.'
+         : skillStep.completionReason === 'reference_sweep_clearance' ? 'The approach needs more clearance. Choose another box destination or walking direction.'
+@@ -3763,14 +3972,15 @@ async function main() {
+         }
+         const correction = placementDistanceM !== null && skillStep.completionReason === 'finished'
+           && !finalCarryPlacement?.goalReached ? maybeQueuePlacementCorrection({ measuredObject, placementDistanceM }) : null;
++        const placedLabel = carriedObjectLabel();
+         setTaskStatus(correction?.queued
+-          ? `Box set down ${Math.round(placementDistanceM * 100)} cm from your destination. Correcting the placement…`
++          ? `${placedLabel[0].toUpperCase()}${placedLabel.slice(1)} set down ${Math.round(placementDistanceM * 100)} cm from your destination. Correcting the placement…`
+           : queuedBoxTask || queuedRestrictedIntent()
+-          ? 'Clear of the box. Resuming the queued command.'
+-          : finalCarryPlacement?.goalReached ? `Complete. The box is ${placementDistanceM < .01
++          ? `Clear of the ${placedLabel}. Resuming the queued command.`
++          : finalCarryPlacement?.goalReached ? `Complete. The ${placedLabel} is ${placementDistanceM < .01
+             ? 'less than 1' : Math.round(placementDistanceM * 100)} cm from your destination.`
+-          : placementDistanceM !== null ? `Clear of the box. ${Math.round(placementDistanceM * 100)} cm remain. Choose a destination to continue.`
+-          : 'Clear of the box. Choose your next movement.');
++          : placementDistanceM !== null ? `Clear of the ${placedLabel}. ${Math.round(placementDistanceM * 100)} cm remain. Choose a destination to continue.`
++          : `Clear of the ${placedLabel}. Choose your next movement.`);
+         // Post-exit point: the terminal receipt was published at task completion and the
+         // box exit has finished. Retire ownership unless a placement correction re-owns it.
+         if (!correction?.queued) {
+@@ -3832,7 +4042,7 @@ async function main() {
+       skillStep = { ...skillStep, mode: 'teacher', justEnteredTeacher: false,
+         referenceFrames: recordedApproachHold.referenceFrames };
+       user.humanGoalWorld = user.objGoalWorld = null;
+-      setTaskStatus('Settling at the box before lifting…');
++      setTaskStatus(`Settling at the ${carriedObjectLabel()} before lifting…`);
+     }
+     if (teacherStandingPlan && (user.wasdActive || user.humanGoalWorld !== null || user.objGoalWorld !== null)) {
+       teacherStandingPlan = null; translator.reset();
+@@ -4016,7 +4226,7 @@ async function main() {
+         if (attempt.supported) {
+           stagedStudentTransport = attempt.controller; studentTransports.push(stagedStudentTransport);
+           if (studentTransports.length > 32) studentTransports.shift();
+-          setTaskStatus('Carrying the box toward your destination…');
++          setTaskStatus(`Carrying the ${carriedObjectLabel()} toward your destination…`);
+         }
+       }
+       if (transportDivergenceLimits && windowActive) {
+@@ -4026,7 +4236,7 @@ async function main() {
+           { parent: skillController, episode: episodeVersion, physicalControl: episodeControlStep });
+         if (!check.active) {
+           transportTeacherResumePending = true;
+-          setTaskStatus('Preparing to complete the carry and set the box down…');
++          setTaskStatus(`Preparing to complete the carry and set the ${carriedObjectLabel()} down…`);
+         }
+       }
+       if (transportTeacherResumePending && stagedStudentTransport?.isOwnedBy({ parent: skillController, episode: episodeVersion })) {
+@@ -4105,12 +4315,12 @@ async function main() {
+       user.releaseKeys();
+       setTaskStatus(useRecoveryCycle ? skillController.statusMessage : useBoxExit ? (pendingSegmentCarryController
+         ? `Carry ${pendingSegmentCarryController.segmentIndex + 1} of ${pendingSegmentCarryController.plan.goals.length} placed. Stepping clear before continuing to your destination…`
+-        : skillStep.phase === 'teacher_exit_release' ? 'Box set down. Releasing the hands before stepping clear…'
+-        : skillStep.phase === 'teacher_exit_hold' ? 'Box set down. Preparing to step clear…'
+-        : skillStep.phase === 'teacher_exit_retreat' ? 'Stepping clear of the box…' : 'Settling after stepping clear…')
++        : skillStep.phase === 'teacher_exit_release' ? `${capitalize(carriedObjectLabel())} set down. Releasing the hands before stepping clear…`
++        : skillStep.phase === 'teacher_exit_hold' ? `${capitalize(carriedObjectLabel())} set down. Preparing to step clear…`
++        : skillStep.phase === 'teacher_exit_retreat' ? `Stepping clear of the ${carriedObjectLabel()}…` : 'Settling after stepping clear…')
+         : skillStep.phase === 'teacher_settling' ? 'Settling before the next movement…'
+-        : skillStep.phase === 'teacher_step' ? 'Stepping around the box…'
+-        : skillStep.phase === 'teacher_turn' ? 'Turning to face the box…' : skillStep.segmentCount > 1
++        : skillStep.phase === 'teacher_step' ? `Stepping around the ${carriedObjectLabel()}…`
++        : skillStep.phase === 'teacher_turn' ? `Turning to face the ${carriedObjectLabel()}…` : skillStep.segmentCount > 1
+         ? `Carrying the box: ${skillStep.segmentIndex + 1} of ${skillStep.segmentCount}…`
+         : skillController === activeCarryController ? 'Carrying the box toward your destination…'
+         : BOX_TASKS[activeBoxTask].executionMessage);
+@@ -4512,7 +4722,7 @@ async function main() {
+           record: { command: Array.from(obs.slice(0, 13)), rawAction: Array.from(mu),
+             rootPositionWorld: Array.from(rootPosWorld), preview: lastControlPreview } });
+         transportTeacherResumePending = true;
+-        setTaskStatus('Preparing to complete the carry and set the box down…');
++        setTaskStatus(`Preparing to complete the carry and set the ${carriedObjectLabel()} down…`);
+         return;
+       }
+     }
+@@ -5427,13 +5637,21 @@ async function main() {
+     // through the keyboard, so highlight/cache stay coherent.
+     picker.syncFromUserState();
+ 
+-    if (paused || activeStepPromise || activeLoadedRetargetPromise || pendingPushAdmission) return;
++    if (paused || activeStepPromise || activeLoadedRetargetPromise || pendingPushAdmission) { lastLoopMs = null; return; }
++    if (realtimePacing) {
++      const now = performance.now();
++      stepDebtMs = Math.min(2 * controlPeriodMs, stepDebtMs + (lastLoopMs === null ? controlPeriodMs : now - lastLoopMs));
++      lastLoopMs = now;
++      if (stepDebtMs < controlPeriodMs - 1e-6) return;
++      stepDebtMs -= controlPeriodMs;
++    }
+     runStep().catch((e) => {
+       paused = true;
+       console.error('[loop] step error', e);
+       setStatus(`ERROR in step(): ${e.message}`);
+     });
+   }
++  if (restrictedMode) warmCarryReferences();
+   loop();
+ }
+ 
+diff --git a/playground/src/mouse_picker.js b/playground/src/mouse_picker.js
+index 39c8e2a..782a55f 100644
+--- a/playground/src/mouse_picker.js
++++ b/playground/src/mouse_picker.js
+@@ -123,6 +123,52 @@ export function attachMousePicker(opts) {
+     targetMarker.visible = true;
+   }
+ 
++  // --- Reach guide: where the selected object can be carried ---------- //
++  // Rings on the floor around the selected object, one per supported carry
++  // distance band (main.js carryReachIntervals). Narrow bands (the suitcase's
++  // single 2.0 m clip) are filled; a wide reach (the large box library) shows
++  // only its outer boundary. Presentation only: it reads planner facts and
++  // never changes a request. Hidden while nothing is selected.
++  const reachGuide = new THREE.Group();
++  reachGuide.name = 'ReachGuide';
++  reachGuide.visible = false;
++  rootGroup.add(reachGuide);
++  let reachGuideKey = null;
++  const REACH_COLOR = 0x4cc9f0;
++  function rebuildReachGuide(intervals) {
++    for (const child of [...reachGuide.children]) {
++      reachGuide.remove(child); child.geometry.dispose(); child.material.dispose();
++    }
++    intervals.forEach(([lo, hi], index) => {
++      const inner = Math.max(0.05, lo), outer = Math.min(hi, 8);
++      if (!(outer > inner)) return;
++      const wide = outer - inner > 1.5;
++      // Narrow bands (each a distinct carry clip, or the single suitcase clip)
++      // are filled; a wide reach (a multi-pickup library) shows only its edges
++      // as thin rings (the near edge is skipped when it sits under the object).
++      const edges = [[outer - 0.035, outer], ...(inner > 0.45 ? [[inner, inner + 0.035]] : [])];
++      const bands = wide ? edges : [[inner, outer]];
++      for (const [a, b] of bands) {
++        const mesh = new THREE.Mesh(new THREE.RingGeometry(a, b, 128), new THREE.MeshBasicMaterial({
++          color: REACH_COLOR, transparent: true, opacity: wide ? 0.45 : index === 0 ? 0.2 : 0.14,
++          side: THREE.DoubleSide, depthWrite: false }));
++        mesh.position.z = 0.003;
++        reachGuide.add(mesh);
++      }
++    });
++  }
++  function updateReachGuide() {
++    const guide = destinationModeActive() ? opts.getReachGuide?.() : null;
++    if (!guide || !Array.isArray(guide.intervals) || !guide.intervals.length || !guide.center) {
++      reachGuide.visible = false;
++      return;
++    }
++    const key = guide.intervals.map(i => `${(+i[0]).toFixed(3)}:${(+i[1]).toFixed(3)}`).join('|');
++    if (key !== reachGuideKey) { reachGuideKey = key; rebuildReachGuide(guide.intervals); }
++    reachGuide.position.set(guide.center[0], guide.center[1], 0);
++    reachGuide.visible = reachGuide.children.length > 0;
++  }
++
+   // --- Raycaster + mouse vec (reused) -------------------------------- //
+   const raycaster = new THREE.Raycaster();
+   const ndc = new THREE.Vector2();
+@@ -216,10 +262,12 @@ export function attachMousePicker(opts) {
+    * same normalization (objectGoalFromGround) and the same onObjectGoal
+    * callback for a mouse click and for the picker-free api path.
+    */
+-  function submitDestination(floorPoint) {
++  function submitDestination(floorPoint, { source = 'click', hitBody = null } = {}) {
+     user.objGoalWorld = objectGoalFromGround ? objectGoalFromGround(floorPoint) : floorPoint;
+     user.humanGoalWorld = null;
+-    opts.onObjectGoal?.(Array.from(user.objGoalWorld));
++    // `source` tells main.js whether a person clicked ('click') or automation asked
++    // ('api'); `hitBody` names the selectable body under the pointer, if any.
++    opts.onObjectGoal?.(Array.from(user.objGoalWorld), { source, hitBody });
+     updateTargetMarker();
+   }
+ 
+@@ -333,7 +381,7 @@ export function attachMousePicker(opts) {
+         // worldToLocal undoes that to give MuJoCo (x, y, z).
+         const local = rootGroup.worldToLocal(p.clone());
+         const floorPoint = new Float32Array([local.x, local.y, local.z]);
+-        submitDestination(floorPoint);
++        submitDestination(floorPoint, { source: 'click', hitBody: bodyGroup?.userData.bodyName ?? null });
+         console.log(`[picker] obj target → MuJoCo (${local.x.toFixed(2)}, ` +
+                     `${local.y.toFixed(2)}, ${local.z.toFixed(2)})  ` +
+                     `[three.js (${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)})]`);
+@@ -374,6 +422,7 @@ export function attachMousePicker(opts) {
+     // Esc/Reset (which null out objGoalWorld via keyboard.js) hide the
+     // marker without an explicit hook here.
+     updateTargetMarker();
++    updateReachGuide();
+     if (destinationModeActive() !== destinationMode) syncDestinationIntent();
+   }
+ 
+@@ -387,7 +436,7 @@ export function attachMousePicker(opts) {
+   function requestDestination(floorPoint) {
+     if (user.activeObjName === null) return { delivered: false, reason: 'no_selection' };
+     if (opts.canInteract?.() === false) return { delivered: false, reason: 'interaction_blocked' };
+-    submitDestination(new Float32Array([floorPoint[0], floorPoint[1], floorPoint[2] ?? 0]));
++    submitDestination(new Float32Array([floorPoint[0], floorPoint[1], floorPoint[2] ?? 0]), { source: 'api', hitBody: null });
+     return { delivered: true, reason: null };
+   }
+ 
+diff --git a/playground/src/restricted_motion_geometry.js b/playground/src/restricted_motion_geometry.js
+index bb1abe7..e58af6b 100644
+--- a/playground/src/restricted_motion_geometry.js
++++ b/playground/src/restricted_motion_geometry.js
+@@ -1,9 +1,31 @@
+ // Collision geometry for complete recorded motions. No physics is changed.
+ // Source polygons need an additional caller-chosen reserve for actual tracking.
+-const finite = (values, count) => values?.length === count && Array.from(values).every(Number.isFinite);
++const finite = (values, count) => {
++  if (values?.length !== count) return false;
++  for (let i = 0; i < count; i++) if (!Number.isFinite(values[i])) return false;
++  return true;
++};
+ const yaw = q => Math.atan2(2 * (q[0] * q[1] + q[3] * q[2]), 1 - 2 * (q[1] ** 2 + q[2] ** 2));
+ const close = (a, b, tolerance = 1e-5) => Math.abs(a - b) <= tolerance;
++// The (pure) validity verdict is remembered only for FROZEN polygon arrays:
++// bindMotionSweep freezes the sweep hulls it has validated, so a remembered
++// verdict can never go stale. Unfrozen arrays (the transient world hulls built
++// per check, anything a caller may still mutate) are validated every time.
++const polygonVerdicts = new WeakMap();
+ function validPolygon(points) {
++  if (!Array.isArray(points)) return false;
++  if (!Object.isFrozen(points)) return computeValidPolygon(points);
++  const remembered = polygonVerdicts.get(points);
++  if (remembered !== undefined) return remembered;
++  const verdict = computeValidPolygon(points);
++  polygonVerdicts.set(points, verdict);
++  return verdict;
++}
++function freezePolygon(points) {
++  if (Array.isArray(points)) { for (const p of points) Object.freeze(p); Object.freeze(points); }
++  return points;
++}
++function computeValidPolygon(points) {
+   if (!Array.isArray(points) || points.length < 3 || !points.every(p => finite(p, 2))) return false;
+   let sign = 0;
+   for (let i = 0; i < points.length; i++) {
+@@ -30,6 +52,11 @@ export function bindMotionSweep(skill, asset, key) {
+   const sweep = matches[0];
+   if (!validPolygon(sweep.wholeBodyXYHull) || !validPolygon(sweep.terminalBodyXYHull)
+       || !finite(sweep.initialRootPose, 7) || !finite(sweep.terminalRootPose, 7)) throw new Error('Finite root anchors and convex collision polygons are required');
++  // Freeze the validated static geometry so validPolygon may remember its verdict.
++  freezePolygon(sweep.wholeBodyXYHull); freezePolygon(sweep.terminalBodyXYHull);
++  if (Array.isArray(sweep.collisionParts)) for (const part of sweep.collisionParts) {
++    freezePolygon(part?.motion?.xyHull); freezePolygon(part?.terminal?.xyHull);
++  }
+   return sweep;
+ }
+ 
+diff --git a/playground/src/teacher_goal_warp.js b/playground/src/teacher_goal_warp.js
+index 4ee63e9..5526a39 100644
+--- a/playground/src/teacher_goal_warp.js
++++ b/playground/src/teacher_goal_warp.js
+@@ -63,8 +63,12 @@ export function snapReferenceObjectYaw(referenceFrames, objectQuaternion, { refe
+  * helper does not establish that a chosen displacement is physically feasible.
+  */
+ export function commonTranslationWarp(referenceFrames, displacement, startFrame, endFrame, controlHz = 60) {
+-  if (!Array.isArray(referenceFrames) || referenceFrames.length === 0
+-      || referenceFrames.some(row => row.length !== TEACHER_REFERENCE_DIM || !Array.from(row).every(Number.isFinite))) {
++  const finiteRow = row => {
++    if (row.length !== TEACHER_REFERENCE_DIM) return false;
++    for (let i = 0; i < TEACHER_REFERENCE_DIM; i++) if (!Number.isFinite(row[i])) return false;
++    return true;
++  };
++  if (!Array.isArray(referenceFrames) || referenceFrames.length === 0 || referenceFrames.some(row => !finiteRow(row))) {
+     throw new Error('Expected finite full747 reference frames');
+   }
+   if (!Number.isInteger(startFrame) || !Number.isInteger(endFrame)
+diff --git a/playground/src/teacher_reference.js b/playground/src/teacher_reference.js
+index 9f473c9..f1409a7 100644
+--- a/playground/src/teacher_reference.js
++++ b/playground/src/teacher_reference.js
+@@ -4,9 +4,9 @@ import { quatMulXyzw, quatRotateOne, yawQuat } from './math.js';
+ import { TEACHER_REFERENCE_DIM } from './teacher_obs.js';
+ 
+ function finite(values, length, label) {
+-  if (!values || values.length !== length || !Array.from(values).every(Number.isFinite)) {
+-    throw new Error(`${label} requires ${length} finite values`);
+-  }
++  let ok = Boolean(values) && values.length === length;
++  for (let i = 0; ok && i < length; i++) if (!Number.isFinite(values[i])) ok = false;
++  if (!ok) throw new Error(`${label} requires ${length} finite values`);
+ }
+ function heading(quaternion) {
+   const forward = quatRotateOne(quaternion, [1, 0, 0]);
+@@ -53,11 +53,27 @@ export function transformTeacherReference(referenceFrame, { yawRadians, translat
+     throw new Error('Teacher planar alignment requires finite yaw and zero vertical translation');
+   }
+   const rotation = yawQuat(yawRadians), out = Float32Array.from(referenceFrame);
++  // Allocation-free form of quatRotateOne / quatMulXyzw (math.js), operation for
++  // operation, so every stored float is bit-identical to the v16 result. The
++  // planner transforms ~400 frames per plan check; the former per-vector
++  // slice/map allocations were ~20% of a click's planning time.
++  const [qx, qy, qz, qw] = rotation, tx = translation[0], ty = translation[1], tz = translation[2];
++  const f = referenceFrame;
+   const vector = (offset, isPosition = false) => {
+-    const value = quatRotateOne(rotation, referenceFrame.slice(offset, offset + 3));
+-    out.set(value.map((v, i) => v + (isPosition ? translation[i] : 0)), offset);
++    const vx = f[offset], vy = f[offset + 1], vz = f[offset + 2];
++    const cx = qy * vz - qz * vy, cy = qz * vx - qx * vz, cz = qx * vy - qy * vx;
++    const ccx = qy * cz - qz * cy, ccy = qz * cx - qx * cz, ccz = qx * cy - qy * cx;
++    out[offset] = (vx + 2 * qw * cx + 2 * ccx) + (isPosition ? tx : 0);
++    out[offset + 1] = (vy + 2 * qw * cy + 2 * ccy) + (isPosition ? ty : 0);
++    out[offset + 2] = (vz + 2 * qw * cz + 2 * ccz) + (isPosition ? tz : 0);
++  };
++  const quaternion = offset => {
++    const x2 = f[offset], y2 = f[offset + 1], z2 = f[offset + 2], w2 = f[offset + 3];
++    out[offset] = qw * x2 + qx * w2 + qy * z2 - qz * y2;
++    out[offset + 1] = qw * y2 - qx * z2 + qy * w2 + qz * x2;
++    out[offset + 2] = qw * z2 + qx * y2 - qy * x2 + qz * w2;
++    out[offset + 3] = qw * w2 - qx * x2 - qy * y2 - qz * z2;
+   };
+-  const quaternion = offset => out.set(quatMulXyzw(rotation, referenceFrame.slice(offset, offset + 4)), offset);
+   vector(0, true); quaternion(3); vector(7); vector(10);
+   vector(71, true); quaternion(74); vector(78); vector(81);
+   for (let body = 0; body < 39; body++) {

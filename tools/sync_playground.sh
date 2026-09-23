@@ -9,8 +9,12 @@
 #      417 MB -> ~240 MB.
 #   2. Re-applies the embed hook (playground/embed.css + one <link> and one <script> in
 #      playground/index.html) so the demo can be framed by index.html#playground.
+#   3. Re-applies the site's runtime patches (tools/playground-patches/*.patch): planner
+#      speed-ups, reach ring + destination snapping, HUD wording, reference prefetch,
+#      maxPixelRatio. If a patch no longer applies to the new release, it is reported
+#      and must be ported by hand (see README "Interactive demo").
 #
-# The demo's own JS is never modified.
+# Everything under playground/ that differs from Sirui's release is one of those patches.
 set -euo pipefail
 
 SRC="${1:?usage: tools/sync_playground.sh <path to unzipped demo dir containing index.html>}"
@@ -84,6 +88,24 @@ else
   echo "embed hook already present"
 fi
 
+# site runtime patches (generated with: git diff HEAD -- playground/src > tools/playground-patches/0001-site-runtime.patch)
+PATCHES=("$ROOT"/tools/playground-patches/*.patch)
+PATCH_FAILED=0
+if [ -e "${PATCHES[0]}" ]; then
+  for patch in "${PATCHES[@]}"; do
+    if git -C "$ROOT" apply --check "$patch"; then
+      git -C "$ROOT" apply "$patch" && echo "applied $(basename "$patch")"
+    else
+      echo "ERROR: $(basename "$patch") does not apply to this release; port it by hand (git apply --3way \"$patch\" shows the conflicts)" >&2
+      PATCH_FAILED=1
+    fi
+  done
+fi
+
 du -sh "$DST"
 find "$DST" -type f -size +100M -print -exec echo "  ^ over GitHub's 100 MB file limit" \;
+if [ "$PATCH_FAILED" = 1 ]; then
+  echo "NOT DONE: playground/ holds the pristine release without the site patches (index.html promises the reach ring); port the patch before committing." >&2
+  exit 1
+fi
 echo "done. Preview: serve the repo root with a Range-capable server and open /playground/index.html?profile=release"

@@ -1,7 +1,7 @@
 /** Isolated geometric preflight; never changes a goal, reference or physics. */
 import {quatRotateOne} from './math.js';
 const EPS=1e-9;
-const finite=(v,n)=>v?.length===n&&Array.from(v).every(Number.isFinite);
+const finite=(v,n)=>{if(v?.length!==n)return false;for(let i=0;i<n;i++)if(!Number.isFinite(v[i]))return false;return true;};
 function unitQuaternion(q){
   if(!finite(q,4))throw new Error('A finite XYZW quaternion is required');
   const norm=Math.hypot(...q);
@@ -18,11 +18,74 @@ function convexHull(points){
   return hull;
 }
 function bounds(points){
-  return Object.fromEntries(['X','Y','Z'].flatMap((s,i)=>[
-    ['min'+s,Math.min(...points.map(p=>p[i]))],['max'+s,Math.max(...points.map(p=>p[i]))]]));
+  let minX=Infinity,minY=Infinity,minZ=Infinity,maxX=-Infinity,maxY=-Infinity,maxZ=-Infinity;
+  for(const p of points){
+    if(p[0]<minX)minX=p[0];if(p[0]>maxX)maxX=p[0];
+    if(p[1]<minY)minY=p[1];if(p[1]>maxY)maxY=p[1];
+    if(p[2]<minZ)minZ=p[2];if(p[2]>maxZ)maxZ=p[2];
+  }
+  return{minX,maxX,minY,maxY,minZ,maxZ};
 }
 function bodyName(model,id){
   let result='',i=model.name_bodyadr[id];while(model.names[i])result+=String.fromCharCode(model.names[i++]);return result;
+}
+
+// Reduction of a compiled collision mesh to a SUPERSET of its 3D convex hull
+// vertices, exact to HULL_FILTER_TOLERANCE (1e-9 m). The XY convex hull and the
+// axis bounds of a rotated point set are those of its hull vertices, so
+// projecting only this subset returns the same polygon and the same min/max: a
+// point strictly inside, or within the tolerance of a facet of, an inner
+// polytope P = conv(E) with E ⊆ V is not a hull vertex of V (a vertex that
+// protrudes less than 1e-9 m past P could be dropped, moving a hull edge by at
+// most that much; planner tolerances are centimetres). E = the vertices extreme
+// in a fixed set of directions; P's facets are found by brute force over
+// triples of E (|E| ≤ ~80). Points of E are always kept. v16 projected every
+// one of the ~13k–38k vertices of each OBJ on every plan check (~57% of a
+// click's planning time); on the four shipped meshes 600 random poses gave
+// identical hulls and bounds.
+const HULL_FILTER_TOLERANCE=1e-9;
+export function hullVertexSuperset(vertices){
+  const n=vertices.length;if(n<=64)return vertices;
+  const directions=[];
+  for(const x of[-1,0,1])for(const y of[-1,0,1])for(const z of[-1,0,1]){
+    if(!x&&!y&&!z)continue;const l=Math.hypot(x,y,z);directions.push([x/l,y/l,z/l]);
+  }
+  const spiral=48,golden=Math.PI*(3-Math.sqrt(5));
+  for(let i=0;i<spiral;i++){
+    const z=1-2*(i+.5)/spiral,r=Math.sqrt(Math.max(0,1-z*z)),a=golden*i;
+    directions.push([r*Math.cos(a),r*Math.sin(a),z]);
+  }
+  const extremeIndex=new Set();
+  for(const d of directions){
+    let best=-Infinity,at=0;
+    for(let i=0;i<n;i++){const v=vertices[i],dot=v[0]*d[0]+v[1]*d[1]+v[2]*d[2];if(dot>best){best=dot;at=i;}}
+    extremeIndex.add(at);
+  }
+  const E=[...extremeIndex].map(i=>vertices[i]);
+  const facets=[];
+  for(let a=0;a<E.length;a++)for(let b=a+1;b<E.length;b++)for(let c=b+1;c<E.length;c++){
+    const A=E[a],B=E[b],C=E[c];
+    const ux=B[0]-A[0],uy=B[1]-A[1],uz=B[2]-A[2],vx=C[0]-A[0],vy=C[1]-A[1],vz=C[2]-A[2];
+    let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
+    const l=Math.hypot(nx,ny,nz);if(l<1e-12)continue;
+    nx/=l;ny/=l;nz/=l;
+    const d=nx*A[0]+ny*A[1]+nz*A[2];
+    let above=false,below=false;
+    for(const P of E){const s=nx*P[0]+ny*P[1]+nz*P[2]-d;if(s>HULL_FILTER_TOLERANCE)above=true;if(s<-HULL_FILTER_TOLERANCE)below=true;if(above&&below)break;}
+    if(above&&below)continue;
+    if(!above)facets.push([nx,ny,nz,d]);
+    if(!below)facets.push([-nx,-ny,-nz,-d]);
+  }
+  if(!facets.length)return vertices;
+  const kept=[];
+  for(let i=0;i<n;i++){
+    const v=vertices[i];
+    if(extremeIndex.has(i)){kept.push(v);continue;}
+    let outside=false;
+    for(const f of facets){if(f[0]*v[0]+f[1]*v[1]+f[2]*v[2]-f[3]>HULL_FILTER_TOLERANCE){outside=true;break;}}
+    if(outside)kept.push(v);
+  }
+  return kept.length>=4?kept:vertices;
 }
 
 // Cache only a body's current exact pose and exact compiled local geometry.
@@ -32,8 +95,13 @@ function sameShape(object,snapshot){
   return object.bodyId===snapshot.bodyId&&object.name===snapshot.name
     &&object.meshes?.length===snapshot.meshes.length&&object.meshes.every((mesh,i)=>{
       const saved=snapshot.meshes[i];
-      return mesh.geomId===saved.geomId&&mesh.verticesLocal?.length===saved.verticesLocal.length
-        &&mesh.verticesLocal.every((v,j)=>v?.length===3&&v.every((x,k)=>Object.is(x,saved.verticesLocal[j][k])));
+      // The constructor deep-freezes verticesLocal (and its reduced hull set), so
+      // the same frozen array object is the same geometry. A foreign, unfrozen
+      // mesh still gets the full value comparison.
+      if(mesh.geomId!==saved.geomId||mesh.verticesLocal?.length!==saved.verticesLocal.length)return false;
+      if(Object.isFrozen(mesh.verticesLocal)&&mesh.verticesLocal===saved.verticesLocal
+        &&(mesh.hullVerticesLocal??null)===(saved.hullVerticesLocal??null))return true;
+      return mesh.verticesLocal.every((v,j)=>v?.length===3&&v.every((x,k)=>Object.is(x,saved.verticesLocal[j][k])));
     });
 }
 
@@ -66,7 +134,10 @@ export class ObjectCollisionMeshes {
           if(!finite(v,3))throw new Error('Finite compiled mesh vertices are required');
           verticesLocal.push(quatRotateOne(q,v).map((x,i)=>x+p[i]));
         }
-        meshes.push({geomId,verticesLocal});
+        for(const v of verticesLocal)Object.freeze(v);
+        Object.freeze(verticesLocal);
+        const hullVerticesLocal=Object.freeze(hullVertexSuperset(verticesLocal));
+        meshes.push(Object.freeze({geomId,verticesLocal,hullVerticesLocal}));
       }
       if(!meshes.length)throw new Error('Object has no supported collision mesh');
       return {bodyId,name:bodyName(model,bodyId),meshes};
@@ -84,7 +155,8 @@ export class ObjectCollisionMeshes {
       }
       const projection=projectObjectCollisionMeshes(object,p,orientation);
       const shape={bodyId:object.bodyId,name:object.name,meshes:object.meshes.map(mesh=>({geomId:mesh.geomId,
-        verticesLocal:mesh.verticesLocal.map(vertex=>Array.from(vertex))}))};
+        verticesLocal:Object.isFrozen(mesh.verticesLocal)?mesh.verticesLocal:mesh.verticesLocal.map(vertex=>Array.from(vertex)),
+        hullVerticesLocal:mesh.hullVerticesLocal??null}))};
       this.#projectionCache.set(object,{pose,shape,projection:structuredClone(projection)});
       this.#projectionCacheStats.misses++;
       return projection;
@@ -98,10 +170,15 @@ export function projectObjectCollisionMeshes(object,positionWorld,quaternionXyzw
       ||!Array.isArray(object.meshes)||!object.meshes.length||!finite(positionWorld,3))throw new Error('A complete object shape and finite pose are required');
   const q=unitQuaternion(quaternionXyzwWorld),all=[];
   const meshes=object.meshes.map(mesh=>{
+    // Frozen meshes built by ObjectCollisionMeshes were validated once; their
+    // hullVerticesLocal is an exact superset of the hull vertices (see above).
+    const reduced=Object.isFrozen(mesh.verticesLocal)&&Array.isArray(mesh.hullVerticesLocal)&&mesh.hullVerticesLocal.length>=4;
     if(!Number.isInteger(mesh.geomId)||!Array.isArray(mesh.verticesLocal)||mesh.verticesLocal.length<4
-        ||!mesh.verticesLocal.every(p=>finite(p,3)))throw new Error('Complete finite local collision vertices are required');
-    const world=mesh.verticesLocal.map(p=>quatRotateOne(q,p).map((x,i)=>x+positionWorld[i]));
-    all.push(...world);return{geomId:mesh.geomId,hull:convexHull(world),...bounds(world)};
+        ||(!reduced&&!mesh.verticesLocal.every(p=>finite(p,3))))throw new Error('Complete finite local collision vertices are required');
+    const source=reduced?mesh.hullVerticesLocal:mesh.verticesLocal;
+    const world=new Array(source.length);
+    for(let i=0;i<source.length;i++){const r=quatRotateOne(q,source[i]);world[i]=[r[0]+positionWorld[0],r[1]+positionWorld[1],r[2]+positionWorld[2]];}
+    for(const w of world)all.push(w);return{geomId:mesh.geomId,hull:convexHull(world),...bounds(world)};
   });
   return{bodyId:object.bodyId,name:object.name,positionWorld:Array.from(positionWorld),quaternionXyzwWorld:q,meshes,...bounds(all)};
 }

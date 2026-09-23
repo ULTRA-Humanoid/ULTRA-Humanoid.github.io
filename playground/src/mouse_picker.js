@@ -123,6 +123,52 @@ export function attachMousePicker(opts) {
     targetMarker.visible = true;
   }
 
+  // --- Reach guide: where the selected object can be carried ---------- //
+  // Rings on the floor around the selected object, one per supported carry
+  // distance band (main.js carryReachIntervals). Narrow bands (the suitcase's
+  // single 2.0 m clip) are filled; a wide reach (the large box library) shows
+  // only its outer boundary. Presentation only: it reads planner facts and
+  // never changes a request. Hidden while nothing is selected.
+  const reachGuide = new THREE.Group();
+  reachGuide.name = 'ReachGuide';
+  reachGuide.visible = false;
+  rootGroup.add(reachGuide);
+  let reachGuideKey = null;
+  const REACH_COLOR = 0x4cc9f0;
+  function rebuildReachGuide(intervals) {
+    for (const child of [...reachGuide.children]) {
+      reachGuide.remove(child); child.geometry.dispose(); child.material.dispose();
+    }
+    intervals.forEach(([lo, hi], index) => {
+      const inner = Math.max(0.05, lo), outer = Math.min(hi, 8);
+      if (!(outer > inner)) return;
+      const wide = outer - inner > 1.5;
+      // Narrow bands (each a distinct carry clip, or the single suitcase clip)
+      // are filled; a wide reach (a multi-pickup library) shows only its edges
+      // as thin rings (the near edge is skipped when it sits under the object).
+      const edges = [[outer - 0.035, outer], ...(inner > 0.45 ? [[inner, inner + 0.035]] : [])];
+      const bands = wide ? edges : [[inner, outer]];
+      for (const [a, b] of bands) {
+        const mesh = new THREE.Mesh(new THREE.RingGeometry(a, b, 128), new THREE.MeshBasicMaterial({
+          color: REACH_COLOR, transparent: true, opacity: wide ? 0.45 : index === 0 ? 0.2 : 0.14,
+          side: THREE.DoubleSide, depthWrite: false }));
+        mesh.position.z = 0.003;
+        reachGuide.add(mesh);
+      }
+    });
+  }
+  function updateReachGuide() {
+    const guide = destinationModeActive() ? opts.getReachGuide?.() : null;
+    if (!guide || !Array.isArray(guide.intervals) || !guide.intervals.length || !guide.center) {
+      reachGuide.visible = false;
+      return;
+    }
+    const key = guide.intervals.map(i => `${(+i[0]).toFixed(3)}:${(+i[1]).toFixed(3)}`).join('|');
+    if (key !== reachGuideKey) { reachGuideKey = key; rebuildReachGuide(guide.intervals); }
+    reachGuide.position.set(guide.center[0], guide.center[1], 0);
+    reachGuide.visible = reachGuide.children.length > 0;
+  }
+
   // --- Raycaster + mouse vec (reused) -------------------------------- //
   const raycaster = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
@@ -216,10 +262,12 @@ export function attachMousePicker(opts) {
    * same normalization (objectGoalFromGround) and the same onObjectGoal
    * callback for a mouse click and for the picker-free api path.
    */
-  function submitDestination(floorPoint) {
+  function submitDestination(floorPoint, { source = 'click', hitBody = null } = {}) {
     user.objGoalWorld = objectGoalFromGround ? objectGoalFromGround(floorPoint) : floorPoint;
     user.humanGoalWorld = null;
-    opts.onObjectGoal?.(Array.from(user.objGoalWorld));
+    // `source` tells main.js whether a person clicked ('click') or automation asked
+    // ('api'); `hitBody` names the selectable body under the pointer, if any.
+    opts.onObjectGoal?.(Array.from(user.objGoalWorld), { source, hitBody });
     updateTargetMarker();
   }
 
@@ -333,7 +381,7 @@ export function attachMousePicker(opts) {
         // worldToLocal undoes that to give MuJoCo (x, y, z).
         const local = rootGroup.worldToLocal(p.clone());
         const floorPoint = new Float32Array([local.x, local.y, local.z]);
-        submitDestination(floorPoint);
+        submitDestination(floorPoint, { source: 'click', hitBody: bodyGroup?.userData.bodyName ?? null });
         console.log(`[picker] obj target → MuJoCo (${local.x.toFixed(2)}, ` +
                     `${local.y.toFixed(2)}, ${local.z.toFixed(2)})  ` +
                     `[three.js (${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)})]`);
@@ -374,6 +422,7 @@ export function attachMousePicker(opts) {
     // Esc/Reset (which null out objGoalWorld via keyboard.js) hide the
     // marker without an explicit hook here.
     updateTargetMarker();
+    updateReachGuide();
     if (destinationModeActive() !== destinationMode) syncDestinationIntent();
   }
 
@@ -387,7 +436,7 @@ export function attachMousePicker(opts) {
   function requestDestination(floorPoint) {
     if (user.activeObjName === null) return { delivered: false, reason: 'no_selection' };
     if (opts.canInteract?.() === false) return { delivered: false, reason: 'interaction_blocked' };
-    submitDestination(new Float32Array([floorPoint[0], floorPoint[1], floorPoint[2] ?? 0]));
+    submitDestination(new Float32Array([floorPoint[0], floorPoint[1], floorPoint[2] ?? 0]), { source: 'api', hitBody: null });
     return { delivered: true, reason: null };
   }
 

@@ -63,8 +63,12 @@ export function snapReferenceObjectYaw(referenceFrames, objectQuaternion, { refe
  * helper does not establish that a chosen displacement is physically feasible.
  */
 export function commonTranslationWarp(referenceFrames, displacement, startFrame, endFrame, controlHz = 60) {
-  if (!Array.isArray(referenceFrames) || referenceFrames.length === 0
-      || referenceFrames.some(row => row.length !== TEACHER_REFERENCE_DIM || !Array.from(row).every(Number.isFinite))) {
+  const finiteRow = row => {
+    if (row.length !== TEACHER_REFERENCE_DIM) return false;
+    for (let i = 0; i < TEACHER_REFERENCE_DIM; i++) if (!Number.isFinite(row[i])) return false;
+    return true;
+  };
+  if (!Array.isArray(referenceFrames) || referenceFrames.length === 0 || referenceFrames.some(row => !finiteRow(row))) {
     throw new Error('Expected finite full747 reference frames');
   }
   if (!Number.isInteger(startFrame) || !Number.isInteger(endFrame)

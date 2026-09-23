@@ -257,7 +257,7 @@
         if (t && loadText) loadText.textContent = t;
         if (status) status.textContent = t;
         if (/^ERROR/.test(t)) { fail('The simulation could not start.', t.replace(/^ERROR[^:]*:\s*/, '').split('\n')[0]); return; }
-        if (!t && waited > 25000 && loadText) loadText.textContent = 'Still downloading — the first visit fetches about 110 MB.';
+        if (!t && waited > 25000 && loadText) loadText.textContent = 'Still downloading — the first visit fetches about 125 MB.';
         /* "Ready" arrives before the walking motions load and before the first frame; "Running at" is the steady state */
         if (/^Running/.test(t) || waited > 180000) goLive();
       } else if (status) {

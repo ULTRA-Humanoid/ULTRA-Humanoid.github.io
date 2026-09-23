@@ -4,9 +4,9 @@ import { quatMulXyzw, quatRotateOne, yawQuat } from './math.js';
 import { TEACHER_REFERENCE_DIM } from './teacher_obs.js';
 
 function finite(values, length, label) {
-  if (!values || values.length !== length || !Array.from(values).every(Number.isFinite)) {
-    throw new Error(`${label} requires ${length} finite values`);
-  }
+  let ok = Boolean(values) && values.length === length;
+  for (let i = 0; ok && i < length; i++) if (!Number.isFinite(values[i])) ok = false;
+  if (!ok) throw new Error(`${label} requires ${length} finite values`);
 }
 function heading(quaternion) {
   const forward = quatRotateOne(quaternion, [1, 0, 0]);
@@ -53,11 +53,27 @@ export function transformTeacherReference(referenceFrame, { yawRadians, translat
     throw new Error('Teacher planar alignment requires finite yaw and zero vertical translation');
   }
   const rotation = yawQuat(yawRadians), out = Float32Array.from(referenceFrame);
+  // Allocation-free form of quatRotateOne / quatMulXyzw (math.js), operation for
+  // operation, so every stored float is bit-identical to the v16 result. The
+  // planner transforms ~400 frames per plan check; the former per-vector
+  // slice/map allocations were ~20% of a click's planning time.
+  const [qx, qy, qz, qw] = rotation, tx = translation[0], ty = translation[1], tz = translation[2];
+  const f = referenceFrame;
   const vector = (offset, isPosition = false) => {
-    const value = quatRotateOne(rotation, referenceFrame.slice(offset, offset + 3));
-    out.set(value.map((v, i) => v + (isPosition ? translation[i] : 0)), offset);
+    const vx = f[offset], vy = f[offset + 1], vz = f[offset + 2];
+    const cx = qy * vz - qz * vy, cy = qz * vx - qx * vz, cz = qx * vy - qy * vx;
+    const ccx = qy * cz - qz * cy, ccy = qz * cx - qx * cz, ccz = qx * cy - qy * cx;
+    out[offset] = (vx + 2 * qw * cx + 2 * ccx) + (isPosition ? tx : 0);
+    out[offset + 1] = (vy + 2 * qw * cy + 2 * ccy) + (isPosition ? ty : 0);
+    out[offset + 2] = (vz + 2 * qw * cz + 2 * ccz) + (isPosition ? tz : 0);
   };
-  const quaternion = offset => out.set(quatMulXyzw(rotation, referenceFrame.slice(offset, offset + 4)), offset);
+  const quaternion = offset => {
+    const x2 = f[offset], y2 = f[offset + 1], z2 = f[offset + 2], w2 = f[offset + 3];
+    out[offset] = qw * x2 + qx * w2 + qy * z2 - qz * y2;
+    out[offset + 1] = qw * y2 - qx * z2 + qy * w2 + qz * x2;
+    out[offset + 2] = qw * z2 + qx * y2 - qy * x2 + qz * w2;
+    out[offset + 3] = qw * w2 - qx * x2 - qy * y2 - qz * z2;
+  };
   vector(0, true); quaternion(3); vector(7); vector(10);
   vector(71, true); quaternion(74); vector(78); vector(81);
   for (let body = 0; body < 39; body++) {
