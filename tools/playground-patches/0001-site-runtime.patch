@@ -1,17 +1,26 @@
 diff --git a/playground/src/main.js b/playground/src/main.js
-index 32c8d81..c70f2cf 100644
+index c70f2cf..c5ed9c1 100644
 --- a/playground/src/main.js
 +++ b/playground/src/main.js
-@@ -1319,8 +1319,10 @@ async function main() {
-   const capitalize = text => text ? text[0].toUpperCase() + text.slice(1) : text;
-   /** 'large box' / 'suitcase' for the object a running or just-finished task handles. */
-   function carriedObjectLabel() {
--    return objectDisplayName(skillController?.skill?.objectBodyName ?? activeCarryController?.skill?.objectBodyName
--      ?? boxExitController?.objectBodyName ?? user.activeObjName);
-+    // The carry controller (or the exit controller) knows the object; the generic
-+    // skillController may be a walk/turn record whose objectBodyName is the largebox.
-+    return objectDisplayName(activeCarryController?.skill?.objectBodyName ?? boxExitController?.objectBodyName
-+      ?? user.activeObjName ?? skillController?.skill?.objectBodyName);
-   }
-   function finishingTaskMessage() {
-     return boxExitController?.isBusy() ? `Stepping clear of the ${carriedObjectLabel()} before following the new command.`
+@@ -559,6 +559,13 @@ async function main() {
+   const maxPixelRatioParam = Number.parseFloat(urlParams.get('maxPixelRatio') ?? '');
+   const maxPixelRatio = Number.isFinite(maxPixelRatioParam) && maxPixelRatioParam >= 1 ? Math.min(maxPixelRatioParam, 2) : 2;
+   const { renderer, scene, camera, controls } = setupThreeJs(canvas, { cameraMode, maxPixelRatio });
++  // cameraPose=px,py,pz,tx,ty,tz (MuJoCo world, metres): a fixed presentation camera for
++  // recordings; the scene root is rotated -pi/2 about X, so three.js (x, y, z) = MuJoCo (x, z, -y).
++  const cameraPoseParam = (urlParams.get('cameraPose') ?? '').split(',').map(Number);
++  if (cameraPoseParam.length === 6 && cameraPoseParam.every(Number.isFinite)) {
++    const [px, py, pz, tx, ty, tz] = cameraPoseParam;
++    camera.position.set(px, pz, -py); controls.target.set(tx, tz, -ty); controls.update();
++  }
+ 
+   setStatus('Loading physics engine and scene…');
+   const { mujoco, model, data } = await loadMujocoScene(SCENE_URL, setStatus);
+@@ -1735,6 +1742,7 @@ async function main() {
+     objectGoalFromGround,
+     onFloorGoal: goal => { if (restrictedMode) submitRestrictedFloorGoal(goal); },
+     getReachGuide: () => {
++      if (urlParams.get('reachGuide') === '0') return null;   // recordings: hide the floor bands
+       if (user.activeObjName === null || activeObjBodyId < 0) return null;
+       const intervals = carryReachIntervals(user.activeObjName);
+       return intervals ? { center: [data.xpos[activeObjBodyId * 3], data.xpos[activeObjBodyId * 3 + 1]], intervals } : null;

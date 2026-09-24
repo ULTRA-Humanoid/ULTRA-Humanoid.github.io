@@ -559,6 +559,13 @@ async function main() {
   const maxPixelRatioParam = Number.parseFloat(urlParams.get('maxPixelRatio') ?? '');
   const maxPixelRatio = Number.isFinite(maxPixelRatioParam) && maxPixelRatioParam >= 1 ? Math.min(maxPixelRatioParam, 2) : 2;
   const { renderer, scene, camera, controls } = setupThreeJs(canvas, { cameraMode, maxPixelRatio });
+  // cameraPose=px,py,pz,tx,ty,tz (MuJoCo world, metres): a fixed presentation camera for
+  // recordings; the scene root is rotated -pi/2 about X, so three.js (x, y, z) = MuJoCo (x, z, -y).
+  const cameraPoseParam = (urlParams.get('cameraPose') ?? '').split(',').map(Number);
+  if (cameraPoseParam.length === 6 && cameraPoseParam.every(Number.isFinite)) {
+    const [px, py, pz, tx, ty, tz] = cameraPoseParam;
+    camera.position.set(px, pz, -py); controls.target.set(tx, tz, -ty); controls.update();
+  }
 
   setStatus('Loading physics engine and scene…');
   const { mujoco, model, data } = await loadMujocoScene(SCENE_URL, setStatus);
@@ -1735,6 +1742,7 @@ async function main() {
     objectGoalFromGround,
     onFloorGoal: goal => { if (restrictedMode) submitRestrictedFloorGoal(goal); },
     getReachGuide: () => {
+      if (urlParams.get('reachGuide') === '0') return null;   // recordings: hide the floor bands
       if (user.activeObjName === null || activeObjBodyId < 0) return null;
       const intervals = carryReachIntervals(user.activeObjName);
       return intervals ? { center: [data.xpos[activeObjBodyId * 3], data.xpos[activeObjBodyId * 3 + 1]], intervals } : null;
